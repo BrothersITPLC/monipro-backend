@@ -41,9 +41,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # custome apps
     "users",
-    "cuscustomers"
+    "customers",
     # therd party apps
     "rest_framework",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
