@@ -1,0 +1,1 @@
+from .organization_initial_registration import OrganizationInitialRegistrationView
