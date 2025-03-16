@@ -1,5 +1,9 @@
+import random
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
@@ -36,3 +40,97 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email", max_length=255, unique=True)
+    name = models.CharField(verbose_name="name", max_length=200)
+    is_organization = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["name"]
+
+    def __str__(self):
+        return self.email
+
+    def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
+
+    @property
+    def is_staff(self):
+        return self.is_admin
+
+    @is_staff.setter
+    def is_staff(self, value):
+        self.is_admin = value
+
+    @property
+    def is_superuser(self):
+        return self.is_admin
+
+    @is_superuser.setter
+    def is_superuser(self, value):
+        self.is_admin = value
+
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "otp_code")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # Set expiration time (e.g. 10 minutes from creation)
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        """Check if the OTP is still valid and has not been used."""
+        return (not self.is_used) and (timezone.now() < self.expires_at)
+
+    def __str__(self):
+        return f"OTP for {self.user.email}: {self.otp_code}"
+
+
+def generate_otp():
+    """Generate a random 6-digit OTP code."""
+    return "{:06d}".format(random.randint(0, 999999))
+
+
+def generate_unique_otp(user=None):
+    """Generate a unique OTP code."""
+    while True:
+        otp_code = "".join(str(random.randint(0, 9)) for _ in range(6))
+        if user is None:
+            if not OTP.objects.filter(otp_code=otp_code).exists():
+                return otp_code
+        else:
+            if not OTP.objects.filter(user=user, otp_code=otp_code).exists():
+                return otp_code
+    max_attempts = 5
+    for _ in range(max_attempts):
+        otp_code = generate_otp()
+        if not OTP.objects.filter(user=user, otp_code=otp_code, is_used=False).exists():
+            return otp_code
+    raise Exception("Could not generate a unique OTP. Try again later.")
+
+
+class RegistrationAttempt(models.Model):
+    email = models.EmailField()
+    attempt_time = models.DateTimeField(auto_now_add=True)
+    successful = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Registration attempt for {self.email} at {self.attempt_time}"
