@@ -7,8 +7,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.otp_send_email import send_otp_via_email
-
 from ..models import OTP, RegistrationAttempt, User, generate_unique_otp
 from ..serializers import (
     OrganizationInitialRegistrationSerializer,
@@ -96,6 +94,7 @@ class OrganizationInitialRegistrationView(APIView):
         },
     )
     def post(self, request):
+        success = True
         serializer = OrganizationInitialRegistrationSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -140,7 +139,7 @@ class OrganizationInitialRegistrationView(APIView):
                     otp_code = generate_unique_otp(user)
 
                     # Try to send email first
-                    success, message = send_otp_via_email(email, otp_code)
+                    # success, message = send_otp_via_email(email, otp_code)
 
                     if success:
                         # Update or create OTP
@@ -165,7 +164,7 @@ class OrganizationInitialRegistrationView(APIView):
                         return Response(
                             {
                                 "status": "error",
-                                "message": f"Failed to send OTP: {message}. Please try again.",
+                                "message": "Failed to send OTP: Please try again. ",
                             },
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         )
@@ -182,13 +181,13 @@ class OrganizationInitialRegistrationView(APIView):
             try:
                 # Generate OTP code directly without user instance
                 otp_code = generate_unique_otp(None)  # Modified to handle unsaved user
-                
                 # Try to send email first
-                success, message = send_otp_via_email(email, otp_code)
+                # success, message = send_otp_via_email(email, otp_code)
 
                 if success:
                     # Only save user if email was sent successfully
                     user = serializer.save()
+
                     OTP.objects.create(user=user, otp_code=otp_code)
 
                     # Mark attempt as successful
@@ -206,7 +205,7 @@ class OrganizationInitialRegistrationView(APIView):
                     return Response(
                         {
                             "status": "error",
-                            "message": f"Failed to send OTP: {message}. Please try again.",
+                            "message": "Failed to send OTP: Please try again. ",
                         },
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     )

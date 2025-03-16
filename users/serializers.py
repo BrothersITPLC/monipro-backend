@@ -1,50 +1,11 @@
-from tokenize import TokenError
-
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import DjangoUnicodeDecodeError, force_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
 from utils.otp_send_email import EmailHandler
-
-
-class VerifyEmailSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    otp = serializers.CharField()
-
-
-class UserLoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ["id", "email"]
-
-    def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
-
-        user = authenticate(
-            request=self.context.get("request"), email=email, password=password
-        )
-        if not user:
-            raise serializers.ValidationError(
-                {
-                    "status": "error",
-                    "message": "Email or password doesn't match. Please try again.",
-                }
-            )
-
-        if not user.is_verified:
-            raise serializers.ValidationError(
-                {"status": "error", "message": "Account not verified."}
-            )
-        return attrs
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -172,22 +133,6 @@ class UserPasswordResetSerializer(serializers.Serializer):
             return attrs
         except DjangoUnicodeDecodeError:
             PasswordResetTokenGenerator().check_token(user, token)
-            raise serializers.ValidationError(
-                {"status": "error", "message": "Invalid token."}
-            )
-
-
-class UserLogoutSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
-
-    def validate(self, attrs):
-        self.token = attrs.get("refresh")
-        return attrs
-
-    def save(self, **kwargs):
-        try:
-            RefreshToken(self.token).blacklist()
-        except TokenError:
             raise serializers.ValidationError(
                 {"status": "error", "message": "Invalid token."}
             )

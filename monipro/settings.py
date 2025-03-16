@@ -6,11 +6,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+# CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+# CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+# CORS_ALLOW_METHODS = os.environ.get("CORS_ALLOW_METHODS", "").split(",")
+# CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS") == "True"
+# CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
+ALLOWED_HOSTS = ["localhost", "http://localhost:5173", "http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -38,6 +48,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "middleware.attach_token.AttachJWTTokenMiddleware",
+    "middleware.refresh_token.AutoRefreshTokenMiddleware",
 ]
 
 REST_FRAMEWORK = {
