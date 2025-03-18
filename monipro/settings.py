@@ -2,6 +2,9 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -66,6 +69,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework.authtoken",
     "drf_yasg",
     "rest_framework_simplejwt.token_blacklist",
 ]
@@ -89,6 +93,17 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
 SIMPLE_JWT = {
@@ -120,17 +135,34 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DB"),
+#         "USER": os.getenv("POSTGRES_USER"),
+#         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+#         "HOST": os.getenv("POSTGRES_HOST"),
+#         "PORT": os.getenv("POSTGRES_PORT"),
+#     }
+# }
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("REMOTE_DB_NAME"),
+#         "USER": os.getenv("REMOTE_DB_USER"),
+#         "PASSWORD": os.getenv("REMOTE_DB_PASSWORD"),
+#         "HOST": os.getenv("REMOTE_DB_HOST"),
+#         "PORT": os.getenv("REMOTE_DB_PORT"),
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

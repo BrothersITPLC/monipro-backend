@@ -1,32 +1,21 @@
 from rest_framework import serializers
 
-from .models import PaymentPlan, PaymentPlanFeature, Price
+from .models import PaymentPlan
 
 
-class PaymentPlanDetailSerializer(serializers.ModelSerializer):
-    features = serializers.SerializerMethodField()
+class PaymentPlanSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
     class Meta:
         model = PaymentPlan
-        fields = ["name", "price", "description", "features", "popular"]
-
-    def get_features(self, obj):
-        plan_features = PaymentPlanFeature.objects.filter(payment_plan=obj)
-        features_list = []
-        for plan_feature in plan_features:
-            if plan_feature.value:
-                features_list.append(plan_feature.value)
-            else:
-                features_list.append(plan_feature.feature.name)
-        return features_list
+        fields = ["id", "name", "price", "description", "features", "popular"]
 
     def get_price(self, obj):
-        duration_id = self.context.get("duration_id")
-        if duration_id:
-            price_obj = Price.objects.filter(
-                payment_plan=obj, duration_id=duration_id
-            ).first()
-            if price_obj:
-                return float(price_obj.price)
-        return float(obj.price)  # Fallback to default price
+        # Return the amount as an integer (or decimal if needed)
+        return int(obj.price.amount)
+
+    def get_features(self, obj):
+        # Assumes a related_name "plan_features" is set on PaymentPlanFeature
+        # and that each PaymentPlanFeature has a "feature_value" with a "value" field.
+        return [pf.feature_value.value for pf in obj.plan_features.all()]

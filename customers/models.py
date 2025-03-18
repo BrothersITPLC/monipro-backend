@@ -1,6 +1,6 @@
 from django.db import models
 
-from subscription.models import PaymentPlan
+from subscription.models import PaymentPlan, PaymentProvider
 
 
 class OrganizationInfo(models.Model):
@@ -8,6 +8,9 @@ class OrganizationInfo(models.Model):
     organization_phone = models.CharField(max_length=15)
     organization_website = models.URLField(blank=True, null=True)
     organization_description = models.TextField(blank=True, null=True)
+    payment_provider = models.ForeignKey(
+        PaymentProvider, on_delete=models.PROTECT, blank=True, null=True
+    )
     organization_payment_plane = models.ForeignKey(
         PaymentPlan, on_delete=models.PROTECT, blank=True, null=True
     )
