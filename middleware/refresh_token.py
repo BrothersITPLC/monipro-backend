@@ -31,6 +31,7 @@ class AutoRefreshTokenMiddleware:
         "/admin/",
         "/redoc/",
         "/swagger/",
+        "/api/logout/",
     }
 
     def __init__(self, get_response):

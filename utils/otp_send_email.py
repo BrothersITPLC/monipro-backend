@@ -63,12 +63,24 @@ class EmailHandler:
     @staticmethod
     def send_email(data):
         email_from = settings.EMAIL_HOST_USER
-        email_message = EmailMessage(
-            subject=data.get("subject", "No Subject"),
-            body=data.get("body", ""),
-            from_email=email_from,
-            to=[data.get("to_email")],
-        )
-        if data.get("is_html", False):
-            email_message.content_subtype = "html"
-        email_message.send()
+        try:
+            email_message = EmailMessage(
+                subject=data.get("subject", "No Subject"),
+                body=data.get("body", ""),
+                from_email=email_from,
+                to=[data.get("to_email")],
+            )
+            if data.get("is_html", False):
+                email_message.content_subtype = "html"
+
+            email_message.send()
+            return (
+                True,
+                "Password reset emailwas Sent successfully, please check your email inbox",
+            )
+        except SMTPException as e:
+            return False, f"SMTP Error: {str(e)}"
+        except socket.timeout:
+            return False, "Email server connection timed out"
+        except Exception as e:
+            return False, str(e)

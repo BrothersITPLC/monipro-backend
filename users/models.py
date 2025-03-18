@@ -7,7 +7,14 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, password=None, password2=None, **extra_fields):
+    def create_user(
+        self,
+        email,
+        name,
+        password=None,
+        password2=None,
+        **extra_fields,
+    ):
         if not email:
             raise ValueError("User must have an email address")
         if password != password2:
@@ -21,6 +28,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, name, password=None, **extra_fields):
+        # Update the method signature
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -30,7 +38,11 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser=True.")
 
         user = self.create_user(
-            email, name, password, password2=password, **extra_fields
+            email,
+            name,
+            password,
+            password2=password,
+            **extra_fields,
         )
         user.is_staff = True
         user.is_superuser = True
@@ -40,12 +52,26 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email", max_length=255, unique=True)
-    name = models.CharField(verbose_name="name", max_length=200)
+    name = models.CharField(verbose_name="user name", max_length=200, blank=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    first_name = models.CharField(
+        verbose_name="First name", max_length=100, blank=True, null=True
+    )
+    last_name = models.CharField(
+        verbose_name="Last name", max_length=100, blank=True, null=True
+    )
     is_organization = models.BooleanField(default=False)
+    is_organization_completed_information = models.BooleanField(default=False)
+    organization = models.ForeignKey(
+        "customers.OrganizationInfo",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="team_members",
+    )
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
-    otp = models.CharField(max_length=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
