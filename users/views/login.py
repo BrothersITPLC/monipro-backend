@@ -1,8 +1,9 @@
+from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.get_token_for_user import get_token_for_user
+from utils.jwt import generate_access_token, generate_refresh_token
 
 from ..serializers import LoginSerializer
 
@@ -13,19 +14,10 @@ class Login(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            # Get the user from validated_data instead of authenticating again
             user = serializer.validated_data.get("user")
-
-            # Generate token
-            token = get_token_for_user(user)
-
-            # Check if token is a dictionary (which seems to be the case)
-            refresh_token = (
-                token.get("refresh") if isinstance(token, dict) else token.refresh
-            )
-            access_token = (
-                token.get("access") if isinstance(token, dict) else token.access
-            )
+        if user is not None:
+            access_token = generate_access_token(user)
+            refresh_token = generate_refresh_token(user)
             if user.is_organization:
                 user_data = {
                     "user_name": user.name,
@@ -75,7 +67,6 @@ class Login(APIView):
                     user_data["organization_name"] = (
                         user.organization.organization_name,
                     )
-
             response = Response(
                 {
                     "status": "success",
@@ -84,22 +75,21 @@ class Login(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-
-            # Set cookies
+            cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
             response.set_cookie(
-                "access_token",
+                cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"),
                 access_token,
-                httponly=True,
-                secure=True,
-                samesite="None",
-                max_age=24 * 60 * 60,
+                httponly=cookie_settings.get("HTTPONLY", True),
+                secure=cookie_settings.get("SECURE", True),
+                samesite=cookie_settings.get("SAMESITE", "Lax"),
+                max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
             )
             response.set_cookie(
-                "refresh_token",
+                cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token"),
                 refresh_token,
-                httponly=True,
-                secure=True,
-                samesite="None",
-                max_age=24 * 60 * 60,
+                httponly=cookie_settings.get("HTTPONLY", True),
+                secure=cookie_settings.get("SECURE", True),
+                samesite=cookie_settings.get("SAMESITE", "Lax"),
+                max_age=cookie_settings.get("REFRESH_MAX_AGE", 604800),
             )
             return response

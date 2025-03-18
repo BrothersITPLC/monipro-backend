@@ -19,7 +19,7 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 # CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS") == "True"
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]  # Simplify this
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -68,10 +68,7 @@ INSTALLED_APPS = [
     # therd party apps
     "corsheaders",
     "rest_framework",
-    "rest_framework_simplejwt",
-    "rest_framework.authtoken",
     "drf_yasg",
-    "rest_framework_simplejwt.token_blacklist",
 ]
 AUTH_USER_MODEL = "users.User"
 
@@ -79,8 +76,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "middleware.attach_token.AttachJWTTokenMiddleware",
-    "middleware.refresh_token.AutoRefreshTokenMiddleware",
+    "middleware.authmiddleware.JWTAuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -88,22 +84,34 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+JWT_AUTH = {
+    "ACCESS_TOKEN_LIFETIME": 300,
+    "REFRESH_TOKEN_LIFETIME": 604800,
+    "EXCLUDED_URL_NAMES": [
+        "login",
+        "signup",
+        "swagger",
+    ],
+    "EXCLUDED_PATHS": [
+        "/api/login/",
+        "/api/signup/",
+        "/swagger/",
+        "/admin/",
+        "/api/plans/",
+    ],
+    "COOKIE_SETTINGS": {
+        "ACCESS_TOKEN_NAME": "access_token",
+        "REFRESH_TOKEN_NAME": "refresh_token",
+        "HTTPONLY": True,
+        "SECURE": False,
+        "SAMESITE": "Lax",
+        "ACCESS_MAX_AGE": 300,
+        "REFRESH_MAX_AGE": 604800,
+    },
 }
 
 SIMPLE_JWT = {
