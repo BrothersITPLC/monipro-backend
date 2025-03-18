@@ -26,15 +26,61 @@ class Login(APIView):
             access_token = (
                 token.get("access") if isinstance(token, dict) else token.access
             )
+            if user.is_organization:
+                user_data = {
+                    "user_name": user.name,
+                    "user_email": user.email,
+                    "is_organization": user.is_organization,
+                    "organization_info_completed": user.is_organization_completed_information,
+                }
+                if user.is_organization_completed_information:
+                    user_data["organization_phone"] = (
+                        user.organization.organization_phone
+                    )
+                    user_data["organization_website"] = (
+                        user.organization.organization_website
+                    )
+                    user_data["organization_description"] = (
+                        user.organization.organization_description
+                    )
+                    user_data["organization_payment_plane"] = (
+                        user.organization.organization_payment_plane
+                    )
+                    user_data["organization_name"] = (
+                        user.organization.organization_name,
+                    )
+            else:
+                user_data = {
+                    "user_name": user.name,
+                    "user_email": user.email,
+                    "is_organization": user.is_organization,
+                    "organization_info_completed": user.is_organization_completed_information,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "phone": user.phone,
+                }
+                if user.is_organization_completed_information:
+                    user_data["organization_phone"] = (
+                        user.organization.organization_phone
+                    )
+                    user_data["organization_website"] = (
+                        user.organization.organization_website
+                    )
+                    user_data["organization_description"] = (
+                        user.organization.organization_description
+                    )
+                    user_data["organization_payment_plane"] = (
+                        user.organization.organization_payment_plane
+                    )
+                    user_data["organization_name"] = (
+                        user.organization.organization_name,
+                    )
 
             response = Response(
                 {
                     "status": "success",
                     "message": "User Login Successfully",
-                    "user_data": {
-                        "user_name": user.name,
-                        "user_email": user.email,
-                    },
+                    "user_data": user_data,
                 },
                 status=status.HTTP_200_OK,
             )

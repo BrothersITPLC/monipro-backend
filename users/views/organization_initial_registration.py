@@ -7,6 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from utils.otp_send_email import send_otp_via_email
+
 from ..models import OTP, RegistrationAttempt, User, generate_unique_otp
 from ..serializers import (
     OrganizationInitialRegistrationSerializer,
@@ -94,7 +96,7 @@ class OrganizationInitialRegistrationView(APIView):
         },
     )
     def post(self, request):
-        success = True
+        # success = True
         serializer = OrganizationInitialRegistrationSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -139,7 +141,7 @@ class OrganizationInitialRegistrationView(APIView):
                     otp_code = generate_unique_otp(user)
 
                     # Try to send email first
-                    # success, message = send_otp_via_email(email, otp_code)
+                    success, message = send_otp_via_email(email, otp_code)
 
                     if success:
                         # Update or create OTP
@@ -182,7 +184,7 @@ class OrganizationInitialRegistrationView(APIView):
                 # Generate OTP code directly without user instance
                 otp_code = generate_unique_otp(None)  # Modified to handle unsaved user
                 # Try to send email first
-                # success, message = send_otp_via_email(email, otp_code)
+                success, message = send_otp_via_email(email, otp_code)
 
                 if success:
                     # Only save user if email was sent successfully

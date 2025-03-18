@@ -16,11 +16,40 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 # CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS") == "True"
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
-ALLOWED_HOSTS = ["localhost", "http://localhost:5173", "http://localhost:3000"]
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]  # Simplify this
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
+CORS_ALLOW_ALL_ORIGINS = False  # Add this line
+CORS_ORIGIN_ALLOW_ALL = False  # Add this line
+
+# Add these settings
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -32,10 +61,13 @@ INSTALLED_APPS = [
     # custome apps
     "users",
     "customers",
+    "subscription",
     # therd party apps
     "corsheaders",
     "rest_framework",
+    "rest_framework_simplejwt",
     "drf_yasg",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 AUTH_USER_MODEL = "users.User"
 
@@ -43,13 +75,13 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "middleware.attach_token.AttachJWTTokenMiddleware",
+    "middleware.refresh_token.AutoRefreshTokenMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "middleware.attach_token.AttachJWTTokenMiddleware",
-    "middleware.refresh_token.AutoRefreshTokenMiddleware",
 ]
 
 REST_FRAMEWORK = {
