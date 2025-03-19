@@ -84,8 +84,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "middleware.authmiddleware.JWTAuthenticationMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -108,12 +108,12 @@ JWT_AUTH = {
     "USER_ID_CLAIM": "user_id",
     "EXCLUDED_URL_NAMES": [
         "login",
-        "signup",
+        "register",
         "swagger",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
-        "/api/signup/",
+        "/api/register/",
         "/swagger/",
         "/admin/",
         "/api/plans/",
@@ -128,6 +128,7 @@ JWT_AUTH = {
         "REFRESH_MAX_AGE": 604800,
     },
 }
+
 
 ROOT_URLCONF = "monipro.urls"
 
