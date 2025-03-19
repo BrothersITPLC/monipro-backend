@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from jwt import ExpiredSignatureError
-from rest_framework import status
 
 from utils.jwt import generate_access_token
 
@@ -34,65 +33,55 @@ class JWTAuthenticationMiddleware:
         ):
             return self.get_response(request)
 
-        # CSRF check for safe HTTP methods
-        if request.method not in ("GET", "HEAD", "OPTIONS", "TRACE"):
-            csrf_token = request.headers.get("X-CSRFToken") or request.COOKIES.get(
-                "csrftoken"
-            )
-
-            if (
-                not csrf_token
-                or not request.META.get("CSRF_COOKIE")
-                or csrf_token != request.META.get("CSRF_COOKIE")
-            ):
-                return JsonResponse(
-                    {"error": "CSRF verification failed. Request aborted."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-
         access_token = request.COOKIES.get(self.access_token_name)
         refresh_token = request.COOKIES.get(self.refresh_token_name)
         new_access_token = None
 
-        # Allow token refresh flow even for expired access tokens
-        try:
-            if access_token:
+        if access_token:
+            try:
                 payload = jwt.decode(
                     access_token, settings.SECRET_KEY, algorithms=["HS256"]
                 )
                 user_id = payload.get("user_id")
                 user = User.objects.get(id=user_id)
                 request.user = user
-        except ExpiredSignatureError:
-            if refresh_token:
-                try:
-                    # Validate refresh token
-                    refresh_payload = jwt.decode(
-                        refresh_token, settings.SECRET_KEY, algorithms=["HS256"]
-                    )
-                    user_id = refresh_payload.get("user_id")
-                    user = User.objects.get(id=user_id)
-                    request.user = user
-                    new_access_token = generate_access_token(user)
-                except Exception:
+            except ExpiredSignatureError:
+                # If access token expired, try using the refresh token
+                if refresh_token:
+                    try:
+                        payload = jwt.decode(
+                            refresh_token, settings.SECRET_KEY, algorithms=["HS256"]
+                        )
+                        user_id = payload.get("user_id")
+                        user = User.objects.get(id=user_id)
+                        new_access_token = generate_access_token(user)
+                        request.user = user
+                    except ExpiredSignatureError:
+                        return JsonResponse(
+                            {"error": "Refresh token expired. Please log in again."},
+                            status=401,
+                        )
+                    except Exception:
+                        return JsonResponse(
+                            {"error": "Invalid refresh token."}, status=401
+                        )
+                else:
                     return JsonResponse(
-                        {"error": "Invalid refresh token"},
-                        status=status.HTTP_401_UNAUTHORIZED,
+                        {
+                            "error": "Access token expired and no refresh token provided."
+                        },
+                        status=401,
                     )
-            else:
-                return JsonResponse(
-                    {"error": "Access token expired and no refresh token provided"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-        except Exception:
+            except Exception:
+                return JsonResponse({"error": "Invalid access token."}, status=401)
+        else:
             return JsonResponse(
-                {"error": "Invalid authentication credentials"},
-                status=status.HTTP_401_UNAUTHORIZED,
+                {"error": "Authentication credentials were not provided."}, status=401
             )
 
         response = self.get_response(request)
 
-        # Update access token if refreshed
+        # If a new access token was generated, set it as an HTTP-only cookie.
         if new_access_token:
             cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
             response.set_cookie(
@@ -103,4 +92,24 @@ class JWTAuthenticationMiddleware:
                 samesite=cookie_settings.get("SAMESITE", "Lax"),
                 max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
             )
+        return response
+
+
+# from django.conf import settings
+# from rest_framework import status
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+
+
+class Logout(APIView):
+    def post(self, request):
+        response = Response(
+            {"status": "success", "message": "User Logout Successfully"},
+            status=status.HTTP_200_OK,
+        )
+        cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
+        response.delete_cookie(cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"))
+        response.delete_cookie(
+            cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token")
+        )
         return response

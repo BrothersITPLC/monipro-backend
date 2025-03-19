@@ -160,3 +160,15 @@ class RegistrationAttempt(models.Model):
 
     def __str__(self):
         return f"Registration attempt for {self.email} at {self.attempt_time}"
+
+
+class DummyUser(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    organization = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="dummy_users"
+    )
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"

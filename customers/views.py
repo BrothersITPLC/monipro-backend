@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,8 +10,9 @@ from .serializers import OrganizationInfoSerializer
 
 
 class OrganizationInfoView(APIView):
-    permission_classes = [IsAuthenticated]
-
+    # Change to allow any request to access this endpoint
+    permission_classes = [AllowAny]
+    
     def post(self, request, *args, **kwargs):
         serializer = OrganizationInfoSerializer(data=request.data)
 

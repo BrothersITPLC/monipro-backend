@@ -26,7 +26,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
+# Update CORS and CSRF settings
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF token
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
 CORS_ALLOW_ALL_ORIGINS = False  # Add this line
 CORS_ORIGIN_ALLOW_ALL = False  # Add this line
 
@@ -76,9 +82,9 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "middleware.authmiddleware.JWTAuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",  # Moved before JWT middleware
+    "middleware.authmiddleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -91,11 +97,7 @@ REST_FRAMEWORK = {
 JWT_AUTH = {
     "ACCESS_TOKEN_LIFETIME": 300,
     "REFRESH_TOKEN_LIFETIME": 604800,
-    "EXCLUDED_URL_NAMES": [
-        "login",
-        "signup",
-        "swagger",
-    ],
+    "EXCLUDED_URL_NAMES": ["login", "signup", "swagger", "organization"],
     "EXCLUDED_PATHS": [
         "/api/login/",
         "/api/signup/",
@@ -109,7 +111,7 @@ JWT_AUTH = {
         "HTTPONLY": True,
         "SECURE": False,
         "SAMESITE": "Lax",
-        "ACCESS_MAX_AGE": 300,
+        "ACCESS_MAX_AGE": 30000,
         "REFRESH_MAX_AGE": 604800,
     },
 }

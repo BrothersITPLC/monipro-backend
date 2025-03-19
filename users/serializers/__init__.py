@@ -1,3 +1,4 @@
+from .dummy_user import DummyUserSerializer
 from .login import LoginSerializer
 from .logout import LogoutSerializer
 from .organization_initial_registration import OrganizationInitialRegistrationSerializer

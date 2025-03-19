@@ -11,8 +11,14 @@ class Logout(APIView):
             status=status.HTTP_200_OK,
         )
         cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
-        response.delete_cookie(cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"))
-        response.delete_cookie(
-            cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token")
-        )
+
+        # Delete cookies with proper parameters
+        for cookie_name in ["ACCESS_TOKEN_NAME", "REFRESH_TOKEN_NAME"]:
+            response.delete_cookie(
+                cookie_settings.get(cookie_name, cookie_name.lower()),
+                path="/",
+                domain=None,
+                samesite=cookie_settings.get("SAMESITE", "Lax"),
+            )
+
         return response
