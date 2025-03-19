@@ -3,8 +3,7 @@ from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from utils.jwt import generate_access_token, generate_refresh_token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..serializers import LoginSerializer
 
@@ -17,11 +16,15 @@ class Login(APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data.get("user")
         if user is not None:
+            # Generate tokens using Simple JWT
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
             # Get CSRF token
             csrf_token = get_token(request)
 
-            access_token = generate_access_token(user)
-            refresh_token = generate_refresh_token(user)
+            # Prepare user data
             if user.is_organization:
                 user_data = {
                     "user_id": user.id,
@@ -40,7 +43,6 @@ class Login(APIView):
                     user_data["organization_description"] = (
                         user.organization.organization_description
                     )
-                    # Convert PaymentPlan object to its ID or a serializable representation
                     user_data["organization_payment_plane"] = (
                         user.organization.organization_payment_plane.id
                         if user.organization.organization_payment_plane
@@ -71,15 +73,14 @@ class Login(APIView):
                     user_data["organization_payment_plane"] = (
                         user.organization.organization_payment_plane
                     )
-                    user_data["organization_name"] = (
-                        user.organization.organization_name,
-                    )
+                    user_data["organization_name"] = user.organization.organization_name
+
             response = Response(
                 {
                     "status": "success",
                     "message": "User Login Successfully",
                     "user_data": user_data,
-                    "csrf_token": csrf_token,  # Include CSRF token in response
+                    "csrf_token": csrf_token,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -93,13 +94,14 @@ class Login(APIView):
                 secure=cookie_settings.get("SECURE", False),
             )
 
+            # Set access and refresh tokens in cookies
             response.set_cookie(
                 cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"),
                 access_token,
                 httponly=cookie_settings.get("HTTPONLY", True),
                 secure=cookie_settings.get("SECURE", True),
                 samesite=cookie_settings.get("SAMESITE", "Lax"),
-                max_age=cookie_settings.get("ACCESS_MAX_AGE", 30),
+                max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
             )
             response.set_cookie(
                 cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token"),

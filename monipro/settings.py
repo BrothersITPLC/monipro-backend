@@ -29,7 +29,7 @@ CORS_ALLOWED_ORIGINS = [
 # Update CORS and CSRF settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF token
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
@@ -83,21 +83,34 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",  # Moved before JWT middleware
-    "middleware.authmiddleware.JWTAuthenticationMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "middleware.authmiddleware.JWTAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
+
+
 JWT_AUTH = {
-    "ACCESS_TOKEN_LIFETIME": 300,
-    "REFRESH_TOKEN_LIFETIME": 604800,
-    "EXCLUDED_URL_NAMES": ["login", "signup", "swagger", "organization"],
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": os.getenv("SECRET_KEY"),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "EXCLUDED_URL_NAMES": [
+        "login",
+        "signup",
+        "swagger",
+    ],
     "EXCLUDED_PATHS": [
         "/api/login/",
         "/api/signup/",
@@ -114,14 +127,6 @@ JWT_AUTH = {
         "ACCESS_MAX_AGE": 30000,
         "REFRESH_MAX_AGE": 604800,
     },
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    "UPDATE_LAST_LOGIN": False,
 }
 
 ROOT_URLCONF = "monipro.urls"

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import OrganizationInfo
+from customers.models import OrganizationInfo
 
 
 class OrganizationInfoSerializer(serializers.ModelSerializer):

@@ -1,12 +1,10 @@
-# myproject/middleware.py
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from jwt import ExpiredSignatureError
 from rest_framework import status
-
-from utils.jwt import generate_access_token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -34,12 +32,11 @@ class JWTAuthenticationMiddleware:
         ):
             return self.get_response(request)
 
-        # CSRF check for safe HTTP methods
+        # CSRF check for non-safe HTTP methods
         if request.method not in ("GET", "HEAD", "OPTIONS", "TRACE"):
             csrf_token = request.headers.get("X-CSRFToken") or request.COOKIES.get(
                 "csrftoken"
             )
-
             if (
                 not csrf_token
                 or not request.META.get("CSRF_COOKIE")
@@ -54,41 +51,37 @@ class JWTAuthenticationMiddleware:
         refresh_token = request.COOKIES.get(self.refresh_token_name)
         new_access_token = None
 
-        # Allow token refresh flow even for expired access tokens
-        try:
-            if access_token:
-                payload = jwt.decode(
-                    access_token, settings.SECRET_KEY, algorithms=["HS256"]
-                )
-                user_id = payload.get("user_id")
-                user = User.objects.get(id=user_id)
-                request.user = user
-        except ExpiredSignatureError:
-            if refresh_token:
-                try:
-                    # Validate refresh token
-                    refresh_payload = jwt.decode(
-                        refresh_token, settings.SECRET_KEY, algorithms=["HS256"]
-                    )
-                    user_id = refresh_payload.get("user_id")
-                    user = User.objects.get(id=user_id)
-                    request.user = user
-                    new_access_token = generate_access_token(user)
-                except Exception:
+        if access_token:
+            try:
+                # Decode to check expiration, but let Simple JWT validate fully
+                jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+                request.META["HTTP_AUTHORIZATION"] = f"Bearer {access_token}"
+            except ExpiredSignatureError:
+                if refresh_token:
+                    try:
+                        # Validate refresh token and generate new access token
+                        refresh = RefreshToken(refresh_token)
+                        user_id = refresh.payload.get("user_id")
+                        user = User.objects.get(id=user_id)
+                        new_access_token = str(refresh.access_token)
+                        request.META["HTTP_AUTHORIZATION"] = (
+                            f"Bearer {new_access_token}"
+                        )
+                    except Exception:
+                        return JsonResponse(
+                            {"error": "Invalid refresh token"},
+                            status=status.HTTP_401_UNAUTHORIZED,
+                        )
+                else:
                     return JsonResponse(
-                        {"error": "Invalid refresh token"},
+                        {"error": "Access token expired and no refresh token provided"},
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
-            else:
+            except Exception:
                 return JsonResponse(
-                    {"error": "Access token expired and no refresh token provided"},
+                    {"error": "Invalid authentication credentials"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-        except Exception:
-            return JsonResponse(
-                {"error": "Invalid authentication credentials"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
 
         response = self.get_response(request)
 
