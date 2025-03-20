@@ -10,9 +10,7 @@ from rest_framework.views import APIView
 from utils.otp_send_email import send_otp_via_email
 
 from ..models import OTP, RegistrationAttempt, User, generate_unique_otp
-from ..serializers import (
-    OrganizationInitialRegistrationSerializer,
-)
+from ..serializers import OrganizationInitialRegistrationSerializer
 
 
 class OrganizationInitialRegistrationView(APIView):

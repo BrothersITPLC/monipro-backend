@@ -10,7 +10,8 @@ schema_view = get_schema_view(
         default_version="v1",
         description="Description of your API",
     ),
-    public=True,  # Set to False if you want to restrict access
+    url="http://localhost:8000/",  # Add this line to set the base URL
+    public=True,
     permission_classes=(permissions.AllowAny,),
 )
 

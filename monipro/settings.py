@@ -118,6 +118,7 @@ JWT_AUTH = {
         "/swagger/",
         "/admin/",
         "/api/plans/",
+        "/api/verify/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
@@ -221,3 +222,4 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+VERFICATION_URL = "http://localhost:5173/verification"
