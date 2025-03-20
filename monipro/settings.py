@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "users",
     "customers",
     "subscription",
+    "infrastructures",
     # therd party apps
     "corsheaders",
     "rest_framework",
@@ -124,7 +125,7 @@ JWT_AUTH = {
         "HTTPONLY": True,
         "SECURE": False,
         "SAMESITE": "Lax",
-        "ACCESS_MAX_AGE": 30000,
+        "ACCESS_MAX_AGE": 604800,
         "REFRESH_MAX_AGE": 604800,
     },
 }
