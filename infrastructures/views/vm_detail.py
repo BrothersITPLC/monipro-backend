@@ -14,7 +14,7 @@ class VMDetailAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return VM.objects.get(pk=pk)
+            return VM.objects.get(pk=pk, belong_to=self.request.user)
         except VM.DoesNotExist:
             return None
 

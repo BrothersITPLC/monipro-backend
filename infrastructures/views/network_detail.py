@@ -14,7 +14,7 @@ class NetworkDetailAPIView(APIView):
 
     def get_object(self, pk):
         try:
-            return Network.objects.get(pk=pk)
+            return Network.objects.get(pk=pk, belong_to=self.request.user)
         except Network.DoesNotExist:
             return None
 

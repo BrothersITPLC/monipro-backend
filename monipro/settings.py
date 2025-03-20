@@ -119,6 +119,7 @@ JWT_AUTH = {
         "/admin/",
         "/api/plans/",
         "/api/verify/",
+        "/api/vm-info/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
