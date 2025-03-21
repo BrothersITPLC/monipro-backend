@@ -16,6 +16,7 @@ class OrganizationInfoSerializer(serializers.ModelSerializer):
             "organization_description",
             "payment_provider",
             "organization_payment_plane",
+            "organization_payment_duration",
             "user_id",
         ]
         read_only_fields = ["id"]

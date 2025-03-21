@@ -51,6 +51,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    ROLE = [
+        ("is_organization", "Admin"),
+        ("is_team", "Team Member"),
+    ]
     email = models.EmailField(verbose_name="Email", max_length=255, unique=True)
     name = models.CharField(verbose_name="user name", max_length=200, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
@@ -60,7 +64,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(
         verbose_name="Last name", max_length=100, blank=True, null=True
     )
-    is_organization = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, choices=ROLE, default="is_organization")
     is_organization_completed_information = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "customers.OrganizationInfo",
@@ -160,15 +164,3 @@ class RegistrationAttempt(models.Model):
 
     def __str__(self):
         return f"Registration attempt for {self.email} at {self.attempt_time}"
-
-
-class DummyUser(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField()
-    organization = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="dummy_users"
-    )
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"

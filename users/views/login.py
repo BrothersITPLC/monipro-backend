@@ -25,15 +25,20 @@ class Login(APIView):
             csrf_token = get_token(request)
 
             # Prepare user data
-            if user.is_organization:
+            if user.role == "is_organization":
                 user_data = {
                     "user_id": user.id,
                     "user_name": user.name,
                     "user_email": user.email,
-                    "is_organization": user.is_organization,
-                    "organization_info_completed": user.is_organization_completed_information,
+                    "is_organization": True
+                    if user.role == "is_organization"
+                    else False,
+                    "organization_info_completed": bool(
+                        user.is_organization_completed_information
+                    ),
                 }
                 if user.is_organization_completed_information:
+                    user_data["organization_id"] = user.organization.id
                     user_data["organization_phone"] = (
                         user.organization.organization_phone
                     )
@@ -44,9 +49,10 @@ class Login(APIView):
                         user.organization.organization_description
                     )
                     user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane.id
-                        if user.organization.organization_payment_plane
-                        else None
+                        user.organization.organization_payment_plane.name
+                    )
+                    user_data["organization_payment_duration"] = (
+                        user.organization.organization_payment_duration.name
                     )
                     user_data["organization_name"] = user.organization.organization_name
             else:
@@ -54,13 +60,16 @@ class Login(APIView):
                     "user_id": user.id,
                     "user_name": user.name,
                     "user_email": user.email,
-                    "is_organization": user.is_organization,
+                    "is_organization": True
+                    if user.role == "is_organization"
+                    else False,
                     "organization_info_completed": user.is_organization_completed_information,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "phone": user.phone,
                 }
                 if user.is_organization_completed_information:
+                    user_data["organization_id"] = user.organization.id
                     user_data["organization_phone"] = (
                         user.organization.organization_phone
                     )
@@ -71,7 +80,10 @@ class Login(APIView):
                         user.organization.organization_description
                     )
                     user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane
+                        user.organization.organization_payment_plane.name
+                    )
+                    user_data["organization_payment_duration"] = (
+                        user.organization.organization_payment_duration.name
                     )
                     user_data["organization_name"] = user.organization.organization_name
 

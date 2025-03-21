@@ -1,0 +1,124 @@
+[
+  {
+    "model": "subscription.feature",
+    "pk": 1,
+    "fields": { "name": "Device Monitoring" }
+  },
+  {
+    "model": "subscription.feature",
+    "pk": 2,
+    "fields": { "name": "AI Insights" }
+  },
+  {
+    "model": "subscription.feature",
+    "pk": 3,
+    "fields": { "name": "Team Members" }
+  },
+  {
+    "model": "subscription.feature",
+    "pk": 4,
+    "fields": { "name": "Data Retention" }
+  },
+  { "model": "subscription.feature", "pk": 5, "fields": { "name": "Support" } },
+  { "model": "subscription.feature", "pk": 6, "fields": { "name": "Alerts" } },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 1,
+    "fields": { "feature": 1, "value": "Up to 5 device monitering" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 2,
+    "fields": { "feature": 1, "value": "Up to 10 device monitering" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 3,
+    "fields": { "feature": 1, "value": "Up to 15 device monitering" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 4,
+    "fields": { "feature": 2, "value": "-" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 5,
+    "fields": { "feature": 2, "value": "Basic AI Insights" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 6,
+    "fields": { "feature": 2, "value": "Basic AI Insights and Suggestions" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 7,
+    "fields": { "feature": 3, "value": "Up to 5 teams" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 8,
+    "fields": { "feature": 3, "value": "Up to 10 teams" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 9,
+    "fields": { "feature": 3, "value": "Up to 15 teams" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 10,
+    "fields": { "feature": 4, "value": "12-hour data retention" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 11,
+    "fields": { "feature": 4, "value": "30 day data retention" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 12,
+    "fields": { "feature": 4, "value": "90 day data retention" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 13,
+    "fields": { "feature": 5, "value": "Comminity support" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 14,
+    "fields": { "feature": 5, "value": "Dedicated support manager" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 15,
+    "fields": { "feature": 5, "value": "24/7 priority support" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 16,
+    "fields": { "feature": 6, "value": "In App alerts" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 17,
+    "fields": { "feature": 6, "value": "I app and email alerts" }
+  },
+  {
+    "model": "subscription.featurevalue",
+    "pk": 18,
+    "fields": { "feature": 6, "value": "I app,email and Telegram alerts" }
+  },
+  {
+    "model": "subscription.paymentprovider",
+    "pk": 1,
+    "fields": { "name": "telebirr" }
+  },
+  {
+    "model": "subscription.paymentprovider",
+    "pk": 2,
+    "fields": { "name": "chapa" }
+  }
+]

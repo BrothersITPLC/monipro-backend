@@ -5,9 +5,9 @@ from .models import (
     Feature,
     FeatureValue,
     PaymentPlan,
+    PaymentPlanDuration,
     PaymentPlanFeature,
     PaymentProvider,
-    Price,
 )
 
 # Register your models here.
@@ -15,6 +15,6 @@ admin.site.register(PaymentPlan)
 admin.site.register(PaymentPlanFeature)
 admin.site.register(Feature)
 admin.site.register(Duration)
-admin.site.register(Price)
 admin.site.register(FeatureValue)
 admin.site.register(PaymentProvider)
+admin.site.register(PaymentPlanDuration)

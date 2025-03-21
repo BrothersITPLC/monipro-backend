@@ -24,9 +24,5 @@ class OrganizationInitialRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data["is_organization"] = True
-        user = User.objects.create_user(**validated_data)
-        if not user.is_organization:
-            user.is_organization = True
-            user.save(update_fields=["is_organization"])
-        return user
+        validated_data["role"] = "is_organization"
+        return User.objects.create_user(**validated_data)

@@ -1,1 +1,2 @@
 from .organization_info import OrganizationInfoView
+from .payment_update import OrganizationPaymentUpdateView

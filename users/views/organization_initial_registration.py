@@ -222,3 +222,16 @@ class OrganizationInitialRegistrationView(APIView):
             {"status": "error", "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+{
+    "name": "Brothers IT PLC",
+    "email": "sebamiy782@erapk.com",
+    "password": "b1ZNwJUN6iLcs0d",
+    "password2": "b1ZNwJUN6iLcs0d",
+}
+
+{
+    "status": "error",
+    "message": "Error during registration: 'User' object has no attribute 'is_organization'. Please try again.",
+}

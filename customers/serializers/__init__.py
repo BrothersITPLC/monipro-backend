@@ -1,1 +1,2 @@
 from .organization_info import OrganizationInfoSerializer
+from .payment_update import OrganizationPaymentUpdateSerializer

@@ -224,3 +224,4 @@ EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 VERFICATION_URL = "http://localhost:5173/verification"
+LOGIN_URL = "http://localhost:5173/auth"

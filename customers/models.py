@@ -1,6 +1,8 @@
+from dateutil.relativedelta import relativedelta
 from django.db import models
+from django.utils import timezone
 
-from subscription.models import PaymentPlan, PaymentProvider
+from subscription.models import Duration, PaymentPlan, PaymentProvider
 
 
 class OrganizationInfo(models.Model):
@@ -12,8 +14,31 @@ class OrganizationInfo(models.Model):
         PaymentProvider, on_delete=models.PROTECT, blank=True, null=True
     )
     organization_payment_plane = models.ForeignKey(
-        PaymentPlan, on_delete=models.PROTECT, blank=True, null=True
+        PaymentPlan, on_delete=models.SET_NULL, null=True, blank=True
     )
+    organization_payment_duration = models.ForeignKey(
+        Duration, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    payment_start_date = models.DateField(default=timezone.now)
+    payment_end_date = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.payment_start_date:
+            self.payment_start_date = timezone.now().date()
+
+        if self.organization_payment_duration:
+            duration_mapping = {
+                "monthly": relativedelta(months=1),
+                "quarterly": relativedelta(months=3),
+                "yearly": relativedelta(years=1),
+            }
+            delta = duration_mapping.get(
+                self.organization_payment_duration.name.lower()
+            )
+            if delta:
+                self.payment_end_date = self.payment_start_date + delta
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.organization_name
