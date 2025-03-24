@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    InfrastructureListView,
     NetworkDetailAPIView,
     NetworkInfoAPIView,
     NetworkListCreateAPIView,
@@ -16,4 +17,7 @@ urlpatterns = [
     path("networks/<int:pk>/", NetworkDetailAPIView.as_view(), name="network-detail"),
     path("vm-info/", VMInfoAPIView.as_view(), name="vm-info"),
     path("networks-info/", NetworkInfoAPIView.as_view(), name="networks-info"),
+    path(
+        "infrastructures/", InfrastructureListView.as_view(), name="infrastructure-list"
+    ),
 ]

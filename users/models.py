@@ -28,7 +28,6 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, name, password=None, **extra_fields):
-        # Update the method signature
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -65,6 +64,7 @@ class User(AbstractBaseUser):
         verbose_name="Last name", max_length=100, blank=True, null=True
     )
     role = models.CharField(max_length=20, choices=ROLE, default="is_organization")
+    is_private = models.BooleanField(default=False)
     is_organization_completed_information = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "customers.OrganizationInfo",
@@ -122,7 +122,6 @@ class OTP(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            # Set expiration time (e.g. 10 minutes from creation)
             self.expires_at = timezone.now() + timedelta(minutes=10)
         super().save(*args, **kwargs)
 
@@ -164,3 +163,39 @@ class RegistrationAttempt(models.Model):
 
     def __str__(self):
         return f"Registration attempt for {self.email} at {self.attempt_time}"
+
+
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="password_reset_otps"
+    )
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "otp_code")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        return (not self.is_used) and (timezone.now() < self.expires_at)
+
+    def __str__(self):
+        return f"Password Reset OTP for {self.user.email}: {self.otp_code}"
+
+
+def generate_password_reset_otp(user):
+    """Generate a unique OTP code for password reset."""
+    max_attempts = 5
+    for _ in range(max_attempts):
+        otp_code = "".join(str(random.randint(0, 9)) for _ in range(6))
+        if not PasswordResetOTP.objects.filter(
+            user=user, otp_code=otp_code, is_used=False
+        ).exists():
+            return otp_code
+    raise Exception("Could not generate a unique OTP. Try again later.")

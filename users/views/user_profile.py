@@ -34,6 +34,7 @@ class UserProfileView(APIView):
             org = user.organization
             user_data.update(
                 {
+                    "organization_id": org.id,
                     "organization_name": org.organization_name,
                     "organization_phone": org.organization_phone,
                     "organization_website": org.organization_website,

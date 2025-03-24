@@ -153,7 +153,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "monipro.wsgi.application"
 
-
+# FOR CONTAINERIZATION
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
@@ -164,6 +164,8 @@ WSGI_APPLICATION = "monipro.wsgi.application"
 #         "PORT": os.getenv("POSTGRES_PORT"),
 #     }
 # }
+
+# FOR LOCALHOST
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -171,7 +173,7 @@ DATABASES = {
     }
 }
 
-
+# FOR TEST
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
