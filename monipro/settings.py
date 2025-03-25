@@ -111,6 +111,9 @@ JWT_AUTH = {
         "login",
         "register",
         "swagger",
+        "private-register",
+        "password-forgot",
+        "password-reset",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -120,6 +123,9 @@ JWT_AUTH = {
         "/api/plans/",
         "/api/verify/",
         "/api/vm-info/",
+        "/api/private-register/",
+        "/api/password-forgot/",
+        "/api/password-reset/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",

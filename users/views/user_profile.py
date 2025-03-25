@@ -15,6 +15,7 @@ class UserProfileView(APIView):
             "user_id": user.id,
             "user_name": user.name,
             "user_email": user.email,
+            "is_private": user.is_private,
             "is_organization": user.role == "is_organization",
             "organization_info_completed": user.is_organization_completed_information,
         }

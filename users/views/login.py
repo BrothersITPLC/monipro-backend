@@ -30,7 +30,8 @@ class Login(APIView):
                     "user_id": user.id,
                     "user_name": user.name,
                     "user_email": user.email,
-                    "is_organization": True
+                    "is_organization": True,
+                    "is_private": user.is_private
                     if user.role == "is_organization"
                     else False,
                     "organization_info_completed": bool(

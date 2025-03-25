@@ -12,7 +12,7 @@ def password_reset_email(otp_code, email):
         logo_url = getattr(settings, "COMPANY_LOGO_URL", "https://example.com/logo.png")
         company_name = getattr(settings, "COMPANY_NAME", "Your Company Name")
         reset_url = getattr(
-            settings, "PASSWORD_RESET_URL", "http://localhost:5173/reset-password"
+            settings, "PASSWORD_RESET_URL", "http://localhost:5173/password-reset"
         )
 
         html_message = f"""
