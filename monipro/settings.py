@@ -109,7 +109,7 @@ JWT_AUTH = {
     "USER_ID_CLAIM": "user_id",
     "EXCLUDED_URL_NAMES": [
         "login",
-        "register",
+        "organization-register",
         "swagger",
         "private-register",
         "password-forgot",
@@ -117,7 +117,7 @@ JWT_AUTH = {
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
-        "/api/register/",
+        "/api/organization-register/",
         "/swagger/",
         "/admin/",
         "/api/plans/",
