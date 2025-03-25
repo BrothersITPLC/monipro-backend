@@ -22,8 +22,7 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
+    "http://localhost"
 ]
 
 # Update CORS and CSRF settings
@@ -32,7 +31,7 @@ CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF token
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost"]
 CORS_ALLOW_ALL_ORIGINS = False  # Add this line
 CORS_ORIGIN_ALLOW_ALL = False  # Add this line
 
@@ -58,7 +57,7 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -154,22 +153,22 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DB"),
-#         "USER": os.getenv("POSTGRES_USER"),
-#         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-#         "HOST": os.getenv("POSTGRES_HOST"),
-#         "PORT": os.getenv("POSTGRES_PORT"),
-#     }
-# }
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB"),
+        "USER": os.getenv("POSTGRES_USER"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("DATABASE_HOST"),
+        "PORT": os.getenv("DATABASE_PORT"),
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 
 # DATABASES = {
@@ -223,5 +222,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-VERFICATION_URL = "http://localhost:5173/verification"
-LOGIN_URL = "http://localhost:5173/auth"
+VERFICATION_URL = "http://localhost:80/verification"
+LOGIN_URL = "http://localhost:80/auth"
