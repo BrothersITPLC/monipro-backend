@@ -5,14 +5,14 @@ from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
 
 
-def send_otp_via_email(email, otp_code):
+def password_reset_email(otp_code, email):
     try:
-        subject = "Your Account Verification Code"
-        # Get the logo URL and company name from settings or use defaults
+        # Fix the subject tuple to be a proper string
+        subject = "Password Reset Request"
         logo_url = getattr(settings, "COMPANY_LOGO_URL", "https://example.com/logo.png")
         company_name = getattr(settings, "COMPANY_NAME", "Your Company Name")
-        verfication_url = getattr(
-            settings, "VERFICATION_URL", "http://localhost:5173/verification"
+        reset_url = getattr(
+            settings, "PASSWORD_RESET_URL", "http://localhost:5173/password-reset"
         )
 
         html_message = f"""
@@ -32,15 +32,14 @@ def send_otp_via_email(email, otp_code):
                     </tr>
                     <tr>
                         <td style="padding: 20px 30px 40px 30px;">
-                            <h2 style="color:#333333; text-align:center; margin-bottom: 30px;">Email Verification</h2>
+                            <h2 style="color:#333333; text-align:center; margin-bottom: 30px;">Password Reset</h2>
                             <p style="font-size: 16px; color: #555555; line-height: 1.5;">Dear User,</p>
-                            <p style="font-size: 16px; color: #555555; line-height: 1.5;">Your One-Time Password (OTP) for email verification is:</p>
+                            <p style="font-size: 16px; color: #555555; line-height: 1.5;">We received a request to reset your password. Your One-Time Password (OTP) for password reset is:</p>
                             <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin: 20px 0;">
                                 <p style="font-size: 32px; color: #007BFF; text-align:center; margin: 0; font-weight: bold; letter-spacing: 3px;">{otp_code}</p>
-                                <p>Copy the OTP and <a href="{verfication_url}" style="color: #007bff; text-decoration: none; font-weight: bold;">click here to verify</a>.</p>
+                                <p>Copy the OTP and <a href="{reset_url}" style="color: #007bff; text-decoration: none; font-weight: bold;">click here to reset your password</a>.</p>
                             </div>
-                            <p style="font-size: 16px; color: #555555; line-height: 1.5;">Please use this code to complete your registration. This code will expire in 10 minutes.</p>
-                            <p style="font-size: 14px; color: #999999; margin-top: 30px;">If you did not request this, please ignore this email.</p>
+                            <p style="font-size: 16px; color: #555555; line-height: 1.5;">This code will expire in 10 minutes. If you did not request a password reset, please ignore this email.</p>
                             <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                             <p style="font-size: 14px; color: #777777;">Best regards,<br>{company_name}</p>
                         </td>
@@ -53,8 +52,6 @@ def send_otp_via_email(email, otp_code):
         </body>
         </html>
         """
-
-        # Create an EmailMessage instance
         email_message = EmailMessage(
             subject=subject,
             body=html_message,
@@ -62,17 +59,14 @@ def send_otp_via_email(email, otp_code):
             to=[email],
             connection=get_connection(timeout=10, fail_silently=False),
         )
-
-        # Set the content type to HTML
         email_message.content_subtype = "html"
 
-        # Send the email
         email_message.send()
 
-        return True, "OTP sent successfully"
+        return True, "Password reset email sent successfully"
     except SMTPException as e:
         return False, f"SMTP Error: {str(e)}"
     except socket.timeout:
         return False, "Email server connection timed out"
     except Exception as e:
-        return False, str(e)
+        return False, f"Server Error: {str(e)}"

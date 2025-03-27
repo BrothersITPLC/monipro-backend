@@ -15,6 +15,7 @@ class UserProfileView(APIView):
             "user_id": user.id,
             "user_name": user.name,
             "user_email": user.email,
+            "is_private": user.is_private,
             "is_organization": user.role == "is_organization",
             "organization_info_completed": user.is_organization_completed_information,
         }
@@ -34,6 +35,7 @@ class UserProfileView(APIView):
             org = user.organization
             user_data.update(
                 {
+                    "organization_id": org.id,
                     "organization_name": org.organization_name,
                     "organization_phone": org.organization_phone,
                     "organization_website": org.organization_website,

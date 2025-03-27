@@ -108,17 +108,23 @@ JWT_AUTH = {
     "USER_ID_CLAIM": "user_id",
     "EXCLUDED_URL_NAMES": [
         "login",
-        "register",
+        "organization-register",
         "swagger",
+        "private-register",
+        "password-forgot",
+        "password-reset",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
-        "/api/register/",
+        "/api/organization-register/",
         "/swagger/",
         "/admin/",
         "/api/plans/",
         "/api/verify/",
         "/api/vm-info/",
+        "/api/private-register/",
+        "/api/password-forgot/",
+        "/api/password-reset/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
@@ -152,7 +158,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "monipro.wsgi.application"
 
+# FOR CONTAINERIZATION
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DB"),
+#         "USER": os.getenv("POSTGRES_USER"),
+#         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+#         "HOST": os.getenv("POSTGRES_HOST"),
+#         "PORT": os.getenv("POSTGRES_PORT"),
+#     }
+# }
 
+# FOR LOCALHOST
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -170,7 +188,7 @@ DATABASES = {
 #     }
 # }
 
-
+# FOR TEST
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",

@@ -1,3 +1,4 @@
+from .infrastructure_list import InfrastructureListView
 from .network_create import NetworkListCreateAPIView
 from .network_detail import NetworkDetailAPIView
 from .network_info import NetworkInfoAPIView
