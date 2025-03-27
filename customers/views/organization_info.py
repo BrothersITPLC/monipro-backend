@@ -38,14 +38,17 @@ class OrganizationInfoView(APIView):
 
                 return Response(
                     {
-                        "organization": serializer.data,
+                        "status": "success",
                         "message": "Organization created and user updated successfully",
                     },
                     status=status.HTTP_201_CREATED,
                 )
             except User.DoesNotExist:
                 return Response(
-                    {"error": f"User with id {user_id} does not exist"},
+                    {
+                        "status": "error",
+                        "message": f"User with id {user_id} does not exist",
+                    },
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
@@ -62,7 +65,10 @@ class OrganizationInfoView(APIView):
                 return Response(serializer.data)
             except OrganizationInfo.DoesNotExist:
                 return Response(
-                    {"error": f"Organization with id {organization_id} does not exist"},
+                    {
+                        "status": "error",
+                        "message": f"Organization with id {organization_id} does not exist",
+                    },
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
@@ -76,7 +82,7 @@ class OrganizationInfoView(APIView):
 
         if not organization_id:
             return Response(
-                {"error": "Organization ID is required"},
+                {"status": "error", "message": "Organization ID is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -84,7 +90,10 @@ class OrganizationInfoView(APIView):
             organization = OrganizationInfo.objects.get(id=organization_id)
         except OrganizationInfo.DoesNotExist:
             return Response(
-                {"error": f"Organization with id {organization_id} does not exist"},
+                {
+                    "status": "error",
+                    "message": f"Organization with id {organization_id} does not exist",
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -116,7 +125,10 @@ class OrganizationInfoView(APIView):
                     user.save()
                 except User.DoesNotExist:
                     return Response(
-                        {"error": f"User with id {user_id} does not exist"},
+                        {
+                            "status": "error",
+                            "message": f"User with id {user_id} does not exist",
+                        },
                         status=status.HTTP_404_NOT_FOUND,
                     )
 
