@@ -175,24 +175,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 # FOR CONTAINERIZATION
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DB"),
-#         "USER": os.getenv("POSTGRES_USER"),
-#         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-#         "HOST": os.getenv("POSTGRES_HOST"),
-#         "PORT": os.getenv("POSTGRES_PORT"),
-#     }
-# }
-
-# FOR LOCALHOST
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+        "HOST": os.getenv("DATABASE_HOST", "monipro-db"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
+
+# FOR LOCALHOST
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 # FOR TEST
 # DATABASES = {
@@ -246,5 +246,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-VERFICATION_URL = "http://localhost:5173/verification"
-LOGIN_URL = "http://localhost:5173/auth"
+VERFICATION_URL = "https://monipro.brothersit.dev/verification"
+LOGIN_URL = "https://monipro.brothersit.dev/auth"
