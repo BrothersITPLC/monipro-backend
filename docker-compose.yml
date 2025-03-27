@@ -1,5 +1,4 @@
 version: "3.9"
-
 services:
   moni_pro:
     image: postgres:16
@@ -9,11 +8,10 @@ services:
     volumes:
       - postgres_primary_db:/var/lib/postgresql/data
     networks:
-      - webnet
+      - moni-pro-net
     ports:
       - "5432:5432"
     restart: always
-
   django_server:
     build:
       context: .
@@ -24,15 +22,13 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8001:8000"
+      - "8000:8000"
+    networks:
+      - moni-pro-net
     depends_on:
       - moni_pro
-    networks:
-      - webnet
     restart: always
-
 volumes:
   postgres_primary_db:
-
 networks:
-  webnet:
+  moni-pro-net:
