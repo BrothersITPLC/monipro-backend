@@ -11,6 +11,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
+# Zabbix Configuration
+ZABBIX_API_URL = os.getenv("ZABBIX_API_URL", "https://zx.brothersit.dev")
+ZABBIX_ADMIN_USER = os.getenv("ZABBIX_ADMIN_USER", "Admin")
+ZABBIX_ADMIN_PASSWORD = os.getenv("ZABBIX_ADMIN_PASSWORD", "zabbix")
+ZABBIX_DEFAULT_PASSWORD = os.getenv("ZABBIX_DEFAULT_PASSWORD", "nochangeatall")
+
 
 # ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
 # CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
@@ -112,6 +118,25 @@ REST_FRAMEWORK = {
 }
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'zabbix_integration.log',
+        },
+    },
+    'loggers': {
+        'users.services': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
 JWT_AUTH = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -175,28 +200,18 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 # FOR CONTAINERIZATION
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DB"),
-#         "USER": os.getenv("POSTGRES_USER"),
-#         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-#         "HOST": os.getenv("POSTGRES_HOST"),
-#         "PORT": os.getenv("POSTGRES_PORT"),
-#     }
-# }
-
-# FOR LOCALHOST
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("DATABASE_HOST"),
-        "PORT": os.getenv("DATABASE_PORT"),
+        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+        "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
+
+# FOR LOCALHOST
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.sqlite3",
@@ -256,5 +271,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-VERFICATION_URL = "http://localhost:80/verification"
-LOGIN_URL = "http://localhost:80/auth"
+VERFICATION_URL = "https://monipro.brothersit.dev/verification"
+LOGIN_URL = "https://monipro.brothersit.dev/auth"

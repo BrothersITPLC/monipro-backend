@@ -1,64 +1,91 @@
-from django.conf import settings
-from django.middleware.csrf import get_token
+import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
-from ..serializers import LoginSerializer
+from ..serializers import VerifyRegistrationOtpSerializer
+from ..services.zabbix_service import ZabbixService, ZabbixServiceError
 
+logger = logging.getLogger(__name__)
 
-class Login(APIView):
-    serializer_class = LoginSerializer
-
+class VerifyRegistrationOtp(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.validated_data.get("user")
+        serializer = VerifyRegistrationOtpSerializer(data=request.data)
 
-            if user is not None:
-                # Generate tokens using Simple JWT
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-                refresh_token = str(refresh)
+        if serializer.is_valid():
+            user = serializer.validated_data["user"]
+            otp_instance = serializer.validated_data["otp_instance"]
 
-                # Get CSRF token
-                csrf_token = get_token(request)
+            otp_instance.is_used = True
+            otp_instance.save()
 
-                response = Response(
-                    {
-                        "status": "success",
-                        "message": "User Login Successfully",
-                        "user_id": user.id,
-                        "csrf_token": csrf_token,
-                    },
-                    status=status.HTTP_200_OK,
-                )
+            user.is_verified = True
+            user.save()
 
-                cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
-                # Set CSRF cookie
-                response.set_cookie(
-                    "csrftoken",
-                    csrf_token,
-                    samesite=cookie_settings.get("SAMESITE", "Lax"),
-                    secure=cookie_settings.get("SECURE", False),
-                )
+            if otp_instance.is_used and user.is_verified:
+                try:
+                    zabbix_service = ZabbixService()
+                    auth_token = zabbix_service.authenticate()
 
-                # Set access and refresh tokens in cookies
-                response.set_cookie(
-                    cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"),
-                    access_token,
-                    httponly=cookie_settings.get("HTTPONLY", True),
-                    secure=cookie_settings.get("SECURE", True),
-                    samesite=cookie_settings.get("SAMESITE", "Lax"),
-                    max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
-                )
-                response.set_cookie(
-                    cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token"),
-                    refresh_token,
-                    httponly=cookie_settings.get("HTTPONLY", True),
-                    secure=cookie_settings.get("SECURE", True),
-                    samesite=cookie_settings.get("SAMESITE", "Lax"),
-                    max_age=cookie_settings.get("REFRESH_MAX_AGE", 604800),
-                )
-                return response
+                    # Create host group with user-specific name
+                    hostgroup_name = f"{user.email}-servers"
+                    hostgroup_id = zabbix_service.create_host_group(hostgroup_name)
+                    
+                    # Create user group with user-specific name
+                    usergroup_name = f"{user.email}-operators"
+                    usergroup_id = zabbix_service.create_user_group(usergroup_name, hostgroup_id)
+
+                    # Create Zabbix user
+                    zabbix_user_id = zabbix_service.create_user(user.email, usergroup_id)
+                    
+                    # Update Django user with Zabbix credentials
+                    user.zabbix_userid = zabbix_user_id
+                    user.zabbix_hostgroup = hostgroup_id
+                    user.zabbix_usergroup = usergroup_id
+                    user.save()
+                    
+                    return Response(
+                        {
+                            "status": "success",
+                            "message": "OTP verified and Zabbix integration completed successfully.",
+                            "user_id": user.id,
+                            "zabbix_userid": zabbix_user_id,
+                            "hostgroup_id": hostgroup_id,
+                            "usergroup_id": usergroup_id
+                        },
+                        status=status.HTTP_202_ACCEPTED,
+                    )
+                    
+                except ZabbixServiceError as e:
+                    logger.error(f"Zabbix integration failed: {str(e)}")
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": f"OTP verified but Zabbix integration failed: {str(e)}"
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+                except Exception as e:
+                    logger.error(f"Unexpected error during Zabbix integration: {str(e)}")
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": "OTP verified but an unexpected error occurred during Zabbix integration."
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+        return Response(
+            {
+                "status": "error",
+                "message": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+  
+    # Zabbix integration fields
+    zabbix_userid = models.CharField(max_length=50, null=True, blank=True)
+    zabbix_hostgroup = models.CharField(max_length=50, null=True, blank=True)
+    zabbix_usergroup = models.CharField(max_length=50, null=True, blank=True)
