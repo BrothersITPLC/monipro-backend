@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     "customers",
     "subscription",
     "infrastructures",
+    "zabbixproxy",
     # therd party apps
     "corsheaders",
     "rest_framework",

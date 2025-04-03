@@ -86,6 +86,4 @@ class VerifyRegistrationOtp(APIView):
 
   
     # Zabbix integration fields
-    zabbix_userid = models.CharField(max_length=50, null=True, blank=True)
-    zabbix_hostgroup = models.CharField(max_length=50, null=True, blank=True)
-    zabbix_usergroup = models.CharField(max_length=50, null=True, blank=True)
+
