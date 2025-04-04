@@ -47,11 +47,17 @@ class ZabbixUser(models.Model):
 
 class ZabbixHost(models.Model):
     hostgroup = models.ForeignKey(ZabbixHostGroup, on_delete=models.CASCADE)
-    hostid = models.CharField(max_length=50, null=True, blank=True)
-    host = models.CharField(max_length=50, null=True, blank=True)
-    ip = models.CharField(max_length=50, null=True, blank=True)
-    dns = models.CharField(max_length=50, null=True, blank=True)
-    port = models.IntegerField(null=True, blank=True)
+    hostid = models.IntegerField()
+    host = models.CharField(max_length=50, unique=True)
+    ip = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    dns = models.CharField(max_length=50, null=True, blank=True, default="")
+    port = models.IntegerField(default=10050)
+    host_template = models.IntegerField(default=10001)
+    device_type = models.CharField(max_length=50, null=True, blank=True)
+    network_device_type = models.CharField(max_length=50, null=True, blank=True)
+    username = models.CharField(max_length=50, null=True, blank=True)
+    password = models.CharField(max_length=50, null=True, blank=True)
+    network_type = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return f"{self.host}-{self.hostid}"

@@ -7,7 +7,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zabbixproxy.views.zabbiz_login import ZabbixServiceError, zabbix_login
+from zabbixproxy.views.credentials.zabbiz_login_function import (
+    ZabbixServiceError,
+    zabbix_login,
+)
 
 api_url = settings.ZABBIX_API_URL
 username = settings.ZABBIX_ADMIN_USER

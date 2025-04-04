@@ -9,7 +9,7 @@ from zabbixproxy.models import ZabbixHost
 from zabbixproxy.serializers import ZabbixHostSerializer
 
 
-class GetZabixHostes(APIView):
+class GetZabbixHostes(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

@@ -114,7 +114,7 @@ class Login(APIView):
                 httponly=cookie_settings.get("HTTPONLY", True),
                 secure=cookie_settings.get("SECURE", True),
                 samesite=cookie_settings.get("SAMESITE", "Lax"),
-                max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
+                max_age=cookie_settings.get("ACCESS_MAX_AGE", 60480),
             )
             response.set_cookie(
                 cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token"),

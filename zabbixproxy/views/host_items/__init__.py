@@ -1,2 +1,3 @@
-from .item_content import get_real_time_data
-from .item_list import get_host_items
+from zabbixproxy.views.host_items.get_hosts import GetZabbixHostes
+from zabbixproxy.views.host_items.item_content_function import get_real_time_data
+from zabbixproxy.views.host_items.item_list_function import get_host_items

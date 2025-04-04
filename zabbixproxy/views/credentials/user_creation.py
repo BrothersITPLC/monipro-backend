@@ -8,8 +8,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from zabbixproxy.models import ZabbixUser, ZabbixUserGroup
-from zabbixproxy.views.user import ZabbixServiceError, create_user
-from zabbixproxy.views.zabbiz_login import zabbix_login
+from zabbixproxy.views.credentials.user_creat_function import (
+    ZabbixServiceError,
+    create_user,
+)
+from zabbixproxy.views.credentials.zabbiz_login_function import zabbix_login
 
 
 class ZabbixUserCreationView(APIView):

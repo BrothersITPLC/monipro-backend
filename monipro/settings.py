@@ -174,7 +174,7 @@ JWT_AUTH = {
         "HTTPONLY": True,
         "SECURE": False,
         "SAMESITE": "Lax",
-        "ACCESS_MAX_AGE": 604800,
+        "ACCESS_MAX_AGE": 60480,
         "REFRESH_MAX_AGE": 604800,
     },
 }

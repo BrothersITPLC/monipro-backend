@@ -18,4 +18,8 @@ class ZabbixHostSerializer(serializers.ModelSerializer):
             "port",
             "hostgroup_name",
             "hostgroupid",
+            "device_type",
+            "dns",
+            "network_device_type",
+            "network_type",
         ]

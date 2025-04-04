@@ -30,8 +30,6 @@ class Network(models.Model):
     networkType = models.CharField(max_length=7, choices=NETWORK_TYPE_CHOICES)
     deviceType = models.CharField(max_length=15, choices=DEVICE_TYPE_CHOICES)
     ipAddress = models.GenericIPAddressField()
-    subnetMask = models.CharField(max_length=15)
-    gateway = models.GenericIPAddressField()
     name = models.CharField(max_length=255)
     belong_to = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="networks"

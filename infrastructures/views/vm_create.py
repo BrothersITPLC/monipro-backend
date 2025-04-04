@@ -120,6 +120,7 @@ class VMListCreateAPIView(APIView):
         serializer = VMSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(belong_to=request.user)
+
             return Response(
                 {
                     "status": "success",
