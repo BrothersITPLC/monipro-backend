@@ -1,1 +1,0 @@
-from zabbixproxy.models import ZabbixUser,ZabbixUserGroup,ZabbixHostGroup

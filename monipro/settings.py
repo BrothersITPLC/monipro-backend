@@ -120,20 +120,20 @@ REST_FRAMEWORK = {
 
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'zabbix_integration.log',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "zabbix_integration.log",
         },
     },
-    'loggers': {
-        'users.services': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': True,
+    "loggers": {
+        "users.services": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": True,
         },
     },
 }
@@ -201,24 +201,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 # FOR CONTAINERIZATION
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
-        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
-        "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
-        "PORT": os.getenv("DATABASE_PORT", "5432"),
-    }
-}
-
-# FOR LOCALHOST
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+#         "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+#         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+#         "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+#         "PORT": os.getenv("DATABASE_PORT", "5432"),
 #     }
 # }
+
+# FOR LOCALHOST
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 # FOR TEST
 # DATABASES = {
