@@ -1,3 +1,0 @@
-from zabbixproxy.views.get_hosts import GetZabixHostes
-from zabbixproxy.views.user_creation import ZabbixUserCreationView
-from zabbixproxy.views.zabbix_credentials import ZabbixCredentialsCreationWrapper

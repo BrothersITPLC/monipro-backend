@@ -28,8 +28,6 @@ class NetworkListCreateAPIView(APIView):
                                 "networkType": "private",
                                 "deviceType": "router",
                                 "ipAddress": "192.168.1.1",
-                                "subnetMask": "255.255.255.0",
-                                "gateway": "192.168.1.1",
                                 "name": "Main Router",
                                 "belong_to": 1,
                             }
@@ -80,15 +78,6 @@ class NetworkListCreateAPIView(APIView):
                     format="ipv4",
                     description="IPv4/IPv6 address",
                 ),
-                "subnetMask": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Subnet mask (e.g., 255.255.255.0)",
-                ),
-                "gateway": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    format="ipv4",
-                    description="Gateway IPv4/IPv6 address",
-                ),
                 "name": openapi.Schema(
                     type=openapi.TYPE_STRING, description="Network device name"
                 ),
@@ -106,8 +95,6 @@ class NetworkListCreateAPIView(APIView):
                             "networkType": "private",
                             "deviceType": "router",
                             "ipAddress": "192.168.1.1",
-                            "subnetMask": "255.255.255.0",
-                            "gateway": "192.168.1.1",
                             "name": "Main Router",
                             "belong_to": 1,
                         },

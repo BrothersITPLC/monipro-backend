@@ -32,8 +32,6 @@ class NetworkInfoAPIView(APIView):
                                     "networkType": "private",
                                     "deviceType": "router",
                                     "ipAddress": "192.168.1.1",
-                                    "subnetMask": "255.255.255.0",
-                                    "gateway": "192.168.1.1",
                                     "name": "Main Router",
                                 },
                                 "owner_details": {
