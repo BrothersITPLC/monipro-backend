@@ -1,7 +1,11 @@
+from typing import Any, cast
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from zabbixproxy.models import ZabbixHostGroup, ZabbixUser, ZabbixUserGroup
 
 
 class UserProfileView(APIView):
@@ -19,6 +23,35 @@ class UserProfileView(APIView):
             "is_organization": user.role == "is_organization",
             "organization_info_completed": user.is_organization_completed_information,
         }
+
+        if (
+            cast(Any, ZabbixHostGroup).objects.filter(created_by=user).exists()
+            and cast(Any, ZabbixUserGroup).objects.filter(created_by=user).exists()
+        ):
+            user_data.update(
+                {
+                    "user_have_zabbix_credentials_1": True,
+                }
+            )
+
+            if cast(Any, ZabbixUser).objects.filter(user=user).exists():
+                user_data.update(
+                    {
+                        "user_have_zabbix_user": True,
+                    }
+                )
+            else:
+                user_data.update(
+                    {
+                        "user_have_zabbix_user": False,
+                    }
+                )
+        else:
+            user_data.update(
+                {
+                    "user_have_zabbix_credentials_1": False,
+                }
+            )
 
         # Add personal info if not organization
         if user.role != "is_organization":
