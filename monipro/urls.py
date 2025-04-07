@@ -27,4 +27,5 @@ urlpatterns = [
     path("api/", include("subscription.urls")),
     path("api/", include("customers.urls")),
     path("api/", include("infrastructures.urls")),
+    path("api/", include("zabbixproxy.urls")),
 ]

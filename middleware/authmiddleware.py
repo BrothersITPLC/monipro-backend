@@ -43,8 +43,11 @@ class JWTAuthenticationMiddleware:
                 or csrf_token != request.META.get("CSRF_COOKIE")
             ):
                 return JsonResponse(
-                    {"error": "CSRF verification failed. Request aborted."},
-                    status=status.HTTP_403_FORBIDDEN,
+                    {
+                        "status": "error",
+                        "message": "CSRF verification failed. Request aborted.",
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
 
         access_token = request.COOKIES.get(self.access_token_name)
@@ -69,17 +72,23 @@ class JWTAuthenticationMiddleware:
                         )
                     except Exception:
                         return JsonResponse(
-                            {"error": "Invalid refresh token"},
+                            {"status": "error", "message": "Invalid refresh token"},
                             status=status.HTTP_401_UNAUTHORIZED,
                         )
                 else:
                     return JsonResponse(
-                        {"error": "Access token expired and no refresh token provided"},
+                        {
+                            "status": "error",
+                            "messgae": "Access token expired and no refresh token provided",
+                        },
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
             except Exception:
                 return JsonResponse(
-                    {"error": "Invalid authentication credentials"},
+                    {
+                        "status": "error",
+                        "message": "Invalid authentication credentials",
+                    },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
@@ -94,6 +103,6 @@ class JWTAuthenticationMiddleware:
                 httponly=cookie_settings.get("HTTPONLY", True),
                 secure=cookie_settings.get("SECURE", True),
                 samesite=cookie_settings.get("SAMESITE", "Lax"),
-                max_age=cookie_settings.get("ACCESS_MAX_AGE", 300),
+                max_age=cookie_settings.get("ACCESS_MAX_AGE", 600),
             )
         return response
