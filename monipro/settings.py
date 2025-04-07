@@ -177,6 +177,7 @@ JWT_AUTH = {
         "/api/password-forgot/",
         "/api/password-reset/",
         "/api/google-exchange/",
+        "/api/auth/google/callback/",  
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
