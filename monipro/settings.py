@@ -297,7 +297,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {"access_type": "online"},
         "OAUTH_PKCE_ENABLED": True,
-        "REDIRECT_URI": "http://localhost:8000/api/auth/google/callback/",
+        "REDIRECT_URI": "https://monipro.brothersit.dev/api/auth/google/callback",
     },
     "github": {
         "APP": {
