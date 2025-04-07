@@ -211,24 +211,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 # FOR CONTAINERIZATION
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
-#         "USER": os.getenv("POSTGRES_USER", "moniprouser"),
-#         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
-#         "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
-#         "PORT": os.getenv("DATABASE_PORT", "5432"),
-#     }
-# }
-
-# FOR LOCALHOST
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+        "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
+
+# FOR LOCALHOST
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 # FOR TEST
 # DATABASES = {
@@ -311,5 +311,5 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True
-REDIRECT_URL = "http://localhost:5173/api/auth/google/callback"
-# REDIRECT_URL = "https://monipro.brothersit.dev/api/auth/google/callback"
+# REDIRECT_URL = "http://localhost:5173/api/auth/google/callback"
+REDIRECT_URL = "https://monipro.brothersit.dev/social/auth/google/callback"
