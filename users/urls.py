@@ -38,5 +38,5 @@ urlpatterns = [
     path("password-forgot/", ForgotPasswordView.as_view(), name="password-forgot"),
     path("password-reset/", PasswordResetView.as_view(), name="password-reset"),
     path("google-exchange/", GoogleExchangeView.as_view(), name="google-exchange"),
-    path("auth/google/callback/", GoogleExchangeView.as_view(), name="google-callback"),
+    path("auth/google/callback", GoogleExchangeView.as_view(), name="google-callback"),
 ]
