@@ -98,6 +98,13 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "drf_yasg",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
+    "social_django",
+    "allauth.headless",
 ]
 AUTH_USER_MODEL = "users.User"
 
@@ -111,6 +118,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -155,6 +163,7 @@ JWT_AUTH = {
         "private-register",
         "password-forgot",
         "password-reset",
+        "google-exchange",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -167,6 +176,7 @@ JWT_AUTH = {
         "/api/private-register/",
         "/api/password-forgot/",
         "/api/password-reset/",
+        "/api/google-exchange/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
@@ -274,3 +284,32 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 VERFICATION_URL = "https://monipro.brothersit.dev/verification"
 LOGIN_URL = "https://monipro.brothersit.dev/auth"
+
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "289478844187-2lckh4oovv3jied47060dajl12g83e8b.apps.googleusercontent.com",
+            "secret": "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",
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "OAUTH_PKCE_ENABLED": True,
+        "REDIRECT_URI": "http://localhost:8000/api/auth/google/callback/",
+    },
+    "github": {
+        "APP": {
+            "client_id": "Ov23lilbz1w8uUzFXM9n",
+            "secret": "94398e32cbd5847690300ad14a93e45e50039606",
+            "key": "",
+        },
+        "SCOPE": ["user:email"],
+        "REDIRECT_URI": "http://localhost:8000/api/auth/github/callback/",
+    },
+}
+LOGIN_REDIRECT_URL = "google-callback"
+SOCIALACCOUNT_LOGIN_ON_GET = True
+REDIRECT_URL = "http://localhost:5173/api/auth/google/callback"
+# REDIRECT_URL = "https://monipro.brothersit.dev/api/auth/google/callback"
