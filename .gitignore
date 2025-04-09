@@ -160,3 +160,10 @@ coverage-html/
 
 # Any file with secret keys or sensitive information
 .secret
+temp.json
+temp2.json
+temp3.json
+
+temp.py
+temp2.py
+temp3.py

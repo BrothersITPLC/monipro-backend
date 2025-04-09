@@ -1,15 +1,11 @@
 from django.urls import path
 
-from zabbixproxy.views.credentials import (
-    ZabbixCredentialsCreationWrapper,
-    ZabbixHostCreationView,
+from zabbixproxy.views.credentials.views import (
+    HostAndUserGroupCreationView,
     ZabbixUserCreationView,
 )
-from zabbixproxy.views.host_items import (
-    GetZabbixHostes,
-    get_host_items,
-    get_real_time_data,
-)
+from zabbixproxy.views.host_items import get_host_items, get_real_time_data
+from zabbixproxy.views.host_items.views import GetZabbixHostes, ZabbixHostCreationView
 
 urlpatterns = [
     path(
@@ -20,7 +16,7 @@ urlpatterns = [
     ),
     path(
         "zabbix-credentials/",
-        ZabbixCredentialsCreationWrapper.as_view(),
+        HostAndUserGroupCreationView.as_view(),
         name="zabbix-credentials-creation",
     ),
     path("hosts/", GetZabbixHostes.as_view(), name="zabbix-hosts"),

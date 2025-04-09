@@ -3,13 +3,8 @@ import time
 
 import requests
 
-logger = logging.getLogger(__name__)
-
-
-class ZabbixServiceError(Exception):
-    """Exception raised for errors in Zabbix service interactions."""
-
-    pass
+zabbix_logger = logging.getLogger("zabbix")
+from utils import ServiceErrorHandler
 
 
 def create_host(
@@ -43,11 +38,11 @@ def create_host(
         Host ID string
 
     Raises:
-        ZabbixServiceError: If host creation fails after max_retries
+        ServiceErrorHandler: If host creation fails after max_retries
     """
     for attempt in range(max_retries):
         try:
-            logger.info(
+            zabbix_logger.info(
                 f"Attempting to create host '{host}' (attempt {attempt + 1}/{max_retries})"
             )
 
@@ -80,53 +75,51 @@ def create_host(
                 timeout=10,
             )
 
-            # Check HTTP errors
-            if response.status_code != 200:
-                logger.error(f"HTTP error: {response.status_code}")
-                raise ZabbixServiceError(f"HTTP error: {response.status_code}")
+            try:
+                response_data_for_log = response.json()
+            except ValueError:
+                zabbix_logger.error("Invalid JSON received from Zabbix.")
+                raise ServiceErrorHandler("Host creation please try again later")
+
+            if "error" in response_data_for_log:
+                error_info = response_data_for_log["error"]
+                error_code = error_info.get("code", "N/A")
+                error_message = error_info.get("message", "No message")
+                error_data = error_info.get("data", "")
+
+                zabbix_logger.error(
+                    f"Zabbix API Error [{error_code}]: {error_message} - {error_data}"
+                )
+
+                raise ServiceErrorHandler(f"{error_message}: {error_data}")
 
             result = response.json()
 
-            # Check for API errors
-            if "error" in result:
-                error_message = result["error"].get(
-                    "data", result["error"].get("message", "Unknown error")
-                )
-                logger.error(f"Zabbix API error: {error_message}")
-
-                # Check if the host already exists
-                if "already exists" in error_message.lower():
-                    logger.warning(f"Host '{host}' already exists")
-                    raise ZabbixServiceError(f"Host '{host}' already exists")
-
-                raise ZabbixServiceError(f"Host creation error: {error_message}")
-
             # Success case
             hostid = result["result"]["hostids"][0]
-            logger.info(f"Host '{host}' created successfully with ID: {hostid}")
+            zabbix_logger.info(f"Host '{host}' created successfully with ID: {hostid}")
             return hostid
 
         except requests.RequestException as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Network error during host creation (attempt {attempt + 1}): {str(e)}"
             )
         except (ValueError, KeyError) as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Invalid response from Zabbix API (attempt {attempt + 1}): {str(e)}"
             )
-        except ZabbixServiceError as e:
-            # Don't retry if the error is due to invalid auth token
+        except ServiceErrorHandler as e:
             if (
                 "not authorized" in str(e).lower()
                 or "session terminated" in str(e).lower()
             ):
-                logger.critical(
+                zabbix_logger.critical(
                     "Authentication error during host creation, token may be invalid"
                 )
                 raise
-            logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
+            zabbix_logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
         except Exception as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Unexpected error during host creation (attempt {attempt + 1}): {str(e)}"
             )
 
@@ -135,5 +128,7 @@ def create_host(
             time.sleep(retry_delay)
 
     # If we get here, all retries failed
-    logger.critical(f"Host creation failed after {max_retries} attempts")
-    raise ZabbixServiceError(f"Host creation failed after {max_retries} attempts")
+    zabbix_logger.critical(f"Host creation failed after {max_retries} attempts")
+    raise ServiceErrorHandler(
+        f"Host creation failed please try again later"
+    )

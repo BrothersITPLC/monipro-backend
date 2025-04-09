@@ -3,13 +3,10 @@ import time
 
 import requests
 
-logger = logging.getLogger(__name__)
+zabbix_logger = logging.getLogger("zabbix")
+django_logger = logging.getLogger("django")
 
-
-class ZabbixServiceError(Exception):
-    """Exception raised for errors in Zabbix service interactions."""
-
-    pass
+from utils import ServiceErrorHandler
 
 
 def zabbix_login(api_url, username, password, max_retries=3, retry_delay=2):
@@ -27,11 +24,11 @@ def zabbix_login(api_url, username, password, max_retries=3, retry_delay=2):
         Authentication token string
 
     Raises:
-        ZabbixServiceError: If authentication fails after max_retries
+        ServiceErrorHandler: If authentication fails after max_retries
     """
     for attempt in range(max_retries):
         try:
-            logger.info(
+            zabbix_logger.info(
                 f"Attempting Zabbix login (attempt {attempt + 1}/{max_retries})"
             )
 
@@ -46,41 +43,47 @@ def zabbix_login(api_url, username, password, max_retries=3, retry_delay=2):
                     },
                     "id": 1,
                 },
-                timeout=10,  # Add timeout to prevent hanging requests
+                timeout=10, 
             )
 
             # Check HTTP errors
-            if response.status_code != 200:
-                logger.error(f"HTTP error: {response.status_code}")
-                raise ZabbixServiceError(f"HTTP error: {response.status_code}")
+            try:
+                response_data_for_log = response.json()
+            except ValueError:
+                zabbix_logger.error("Invalid JSON received from Zabbix.")
+                raise ServiceErrorHandler("Host creation please try again later")
+
+            if "error" in response_data_for_log:
+                error_info = response_data_for_log["error"]
+                error_code = error_info.get("code", "N/A")
+                error_message = error_info.get("message", "No message")
+                error_data = error_info.get("data", "")
+
+                zabbix_logger.error(
+                    f"Zabbix API Error [{error_code}]: {error_message} - {error_data}"
+                )
+
+                raise ServiceErrorHandler("something went wrong please try again later")
 
             result = response.json()
 
-            # Check for API errors
-            if "error" in result:
-                error_message = result["error"].get(
-                    "data", result["error"].get("message", "Unknown error")
-                )
-                logger.error(f"Zabbix API error: {error_message}")
-                raise ZabbixServiceError(f"Auth error: {error_message}")
-
             # Success case
             auth_token = result["result"]
-            logger.info("Zabbix authentication successful")
+            zabbix_logger.info("Zabbix authentication successful {auth_token}")
             return auth_token
 
         except requests.RequestException as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Network error during Zabbix authentication (attempt {attempt + 1}): {str(e)}"
             )
         except (ValueError, KeyError) as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Invalid response from Zabbix API (attempt {attempt + 1}): {str(e)}"
             )
-        except ZabbixServiceError as e:
-            logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
+        except ServiceErrorHandler as e:
+            zabbix_logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
         except Exception as e:
-            logger.error(
+            zabbix_logger.error(
                 f"Unexpected error during Zabbix authentication (attempt {attempt + 1}): {str(e)}"
             )
 
@@ -89,7 +92,5 @@ def zabbix_login(api_url, username, password, max_retries=3, retry_delay=2):
             time.sleep(retry_delay)
 
     # If we get here, all retries failed
-    logger.critical(f"Zabbix authentication failed after {max_retries} attempts")
-    raise ZabbixServiceError(
-        f"Zabbix authentication failed after {max_retries} attempts"
-    )
+    zabbix_logger.critical(f"Zabbix authentication failed after {max_retries} attempts")
+    raise ServiceErrorHandler("something went wrong please try again later")

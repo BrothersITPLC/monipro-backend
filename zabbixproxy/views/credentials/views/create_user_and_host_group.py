@@ -7,16 +7,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.models import ZabbixHostGroup, ZabbixUserGroup
-from zabbixproxy.views.credentials.host_group_function import (
-    ZabbixServiceError,
+from utils import ServiceErrorHandler
+from zabbixproxy.models import ZabbixAuthToken, ZabbixHostGroup, ZabbixUserGroup
+from zabbixproxy.views.credentials.functions import (
     create_host_group,
+    create_user_group,
+    zabbix_login,
 )
-from zabbixproxy.views.credentials.user_group_function import create_user_group
-from zabbixproxy.views.credentials.zabbiz_login_function import zabbix_login
 
 
-class ZabbixCredentialsCreationWrapper(APIView):
+class HostAndUserGroupCreationView(APIView):
     api_url = settings.ZABBIX_API_URL
     username = settings.ZABBIX_ADMIN_USER
     password = settings.ZABBIX_ADMIN_PASSWORD
@@ -27,10 +27,9 @@ class ZabbixCredentialsCreationWrapper(APIView):
             return zabbix_login(
                 api_url=self.api_url, username=self.username, password=self.password
             )
-        except ZabbixServiceError as e:
-            # Re-raise with more context
-            raise ZabbixServiceError(
-                f"Failed to obtain Zabbix authentication token: {str(e)}"
+        except ServiceErrorHandler as e:
+            raise ServiceErrorHandler(
+                f"{str(e)}"
             )
 
     def post(self, request):
@@ -72,24 +71,16 @@ class ZabbixCredentialsCreationWrapper(APIView):
                 {
                     "status": "success",
                     "message": "Zabbix resources already exist",
-                    "host_group": {
-                        "id": existing_host_group.id,
-                        "name": existing_host_group.name,
-                        "zabbix_id": existing_host_group.hostgroupid,
-                    },
-                    "user_group": {
-                        "id": existing_user_group.id,
-                        "name": existing_user_group.name,
-                        "zabbix_id": existing_user_group.usergroupid,
-                        "permission": existing_user_group.permission,
-                    },
                 },
                 status=status.HTTP_200_OK,
             )
-
         try:
             # Get auth token
-            zabbix_auth_token = self.get_zabbix_auth_token()
+            auth_token = ZabbixAuthToken.objects.first()
+            if not auth_token:
+                auth_token = ZabbixAuthToken.get_or_create_token(
+                    self.get_zabbix_auth_token()
+                )
 
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())
@@ -103,7 +94,7 @@ class ZabbixCredentialsCreationWrapper(APIView):
                 else:
                     # Create host group in Zabbix
                     host_groupid = create_host_group(
-                        self.api_url, zabbix_auth_token, zabbix_host_group_name
+                        self.api_url, auth_token, zabbix_host_group_name
                     )
 
                     # Create host group record in our database
@@ -121,7 +112,7 @@ class ZabbixCredentialsCreationWrapper(APIView):
                     # Create user group in Zabbix with permissions for the host group
                     user_groupid = create_user_group(
                         self.api_url,
-                        zabbix_auth_token,
+                        auth_token,
                         zabbix_user_group_name,
                         host_groupid,
                         permission,
@@ -141,32 +132,20 @@ class ZabbixCredentialsCreationWrapper(APIView):
                 {
                     "status": "success",
                     "message": "Zabbix resources created successfully",
-                    "host_group": {
-                        "id": zabbix_host_group.id,
-                        "name": zabbix_host_group.name,
-                        "zabbix_id": host_groupid,
-                    },
-                    "user_group": {
-                        "id": zabbix_user_group.id,
-                        "name": zabbix_user_group.name,
-                        "zabbix_id": user_groupid,
-                        "permission": permission
-                        if not existing_user_group
-                        else existing_user_group.permission,
-                    },
+               
                 },
                 status=status.HTTP_201_CREATED
                 if not (existing_host_group and existing_user_group)
                 else status.HTTP_200_OK,
             )
 
-        except ZabbixServiceError as e:
+        except ServiceErrorHandler as e:
             return Response(
                 {"status": "error", "message": f"Zabbix service error: {str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
             return Response(
-                {"status": "error", "message": f"Unexpected error: {str(e)}"},
+                {"status": "error", "message": "Unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

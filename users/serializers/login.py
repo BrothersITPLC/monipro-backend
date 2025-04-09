@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from ..models import User
+from users.models import User
+from utils import ServiceErrorHandler
 
 
 class LoginSerializer(serializers.Serializer):
@@ -20,18 +21,14 @@ class LoginSerializer(serializers.Serializer):
             request=self.context.get("request"), email=email, password=password
         )
         if not user:
-            raise serializers.ValidationError(
-                {
-                    "status": "error",
-                    "message": "Email or password doesn't match. Please try again.",
-                }
-            )
+            raise ServiceErrorHandler(
+                    "Email or password doesn't match. Please try again."
+                )
 
         if not user.is_verified:
-            raise serializers.ValidationError(
-                {"status": "error", "message": "Account not verified."}
-            )
-        
+            raise ServiceErrorHandler ("Account not verified.")
+            
+    
         # Return the user object instead of just the attributes
         attrs["user"] = user
         return attrs

@@ -92,8 +92,8 @@ INSTALLED_APPS = [
     "users",
     "customers",
     "subscription",
-    "infrastructures",
     "zabbixproxy",
+    "jobs",
     # therd party apps
     "corsheaders",
     "rest_framework",
@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.github",
     "social_django",
     "allauth.headless",
+    "django_cron"
 ]
 AUTH_USER_MODEL = "users.User"
 
@@ -127,25 +128,6 @@ REST_FRAMEWORK = {
 }
 
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": "zabbix_integration.log",
-        },
-    },
-    "loggers": {
-        "users.services": {
-            "handlers": ["file"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
-
 JWT_AUTH = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -158,7 +140,7 @@ JWT_AUTH = {
     "USER_ID_CLAIM": "user_id",
     "EXCLUDED_URL_NAMES": [
         "login",
-        "organization-register",
+        "initial-register",
         "swagger",
         "private-register",
         "password-forgot",
@@ -167,7 +149,7 @@ JWT_AUTH = {
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
-        "/api/organization-register/",
+        "/api/initial-register/",
         "/swagger/",
         "/admin/",
         "/api/plans/",
@@ -311,5 +293,53 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True
-REDIRECT_URL = "http://localhost:5173/api/auth/google/callback"
+REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
 # REDIRECT_URL = "https://monipro.brothersit.dev/api/auth/google/callback"
+
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "default": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "zabbix_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "zabbix.log"),
+            "formatter": "default",
+        },
+
+        "django_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "django.log"),
+            "formatter": "default",
+        },
+    },
+
+    "loggers": {
+        "zabbix": {
+            "handlers": ["zabbix_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        "django": {
+            "handlers": ["django_file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
+CRONJOBS = [
+    ('0 0 * * *', 'jobs.functions.DeleteOldTokensCronJob')
+]

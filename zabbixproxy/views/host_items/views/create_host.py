@@ -7,12 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.models import ZabbixHost, ZabbixHostGroup
-from zabbixproxy.views.credentials.host_creat_function import (
-    ZabbixServiceError,
-    create_host,
-)
-from zabbixproxy.views.credentials.zabbiz_login_function import zabbix_login
+from utils import ServiceErrorHandler
+from zabbixproxy.models import ZabbixAuthToken, ZabbixHost, ZabbixHostGroup
+from zabbixproxy.views.credentials.functions import zabbix_login
+from zabbixproxy.views.host_items.functions import create_host
 
 
 class ZabbixHostCreationView(APIView):
@@ -27,10 +25,9 @@ class ZabbixHostCreationView(APIView):
             return zabbix_login(
                 api_url=self.api_url, username=self.username, password=self.password
             )
-        except ZabbixServiceError as e:
-            # Re-raise with more context
-            raise ZabbixServiceError(
-                f"Failed to obtain Zabbix authentication token: {str(e)}"
+        except ServiceErrorHandler as e:
+            raise ServiceErrorHandler(
+                f"{str(e)}"
             )
 
     def post(self, request):
@@ -39,7 +36,6 @@ class ZabbixHostCreationView(APIView):
         request_data = request.data
 
         # Initialize default values
-        ip = ""
         dns = ""
         host_template = 10001
         port = 10050
@@ -56,9 +52,46 @@ class ZabbixHostCreationView(APIView):
 
         # Get host from request data
         host = request_data.get("host")
+        ip= request_data.get("ip")
+        password= request_data.get("ip")
+        network_type= request_data.get("network_type")
+        network_device_type= request_data.get("network_device_type")
+        device_type= request_data.get("device_type")
+
         if not host:
             return Response(
-                {"error": "Host name is required"},
+                {"status": "error",
+                 "message": "Host name is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not ip:
+            return Response(
+                {"status": "error",
+                 "message": "Ip is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not password:
+            return Response(
+                {"status": "error",
+                 "message": "password is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not network_type:
+            return Response(
+                {"status": "error",
+                 "message": "network type is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not network_device_type:
+            return Response(
+                {"status": "error",
+                 "message": "network device type is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not device_type:
+            return Response(
+                {"status": "error",
+                 "message": "device type is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -68,7 +101,9 @@ class ZabbixHostCreationView(APIView):
         )
         if not hostgroup_obj:
             return Response(
-                {"error": "No host group found for this user"},
+                {
+                "status": "error",
+                 "message": "No host group found for this user"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -97,8 +132,11 @@ class ZabbixHostCreationView(APIView):
                 )
 
         try:
-            # Get auth token
-            auth_token = self.get_zabbix_auth_token()
+            auth_token = ZabbixAuthToken.objects.first()
+            if not auth_token:
+                auth_token = ZabbixAuthToken.get_or_create_token(
+                    self.get_zabbix_auth_token()
+                )
 
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())
@@ -142,13 +180,13 @@ class ZabbixHostCreationView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
-        except ZabbixServiceError as e:
+        except ServiceErrorHandler as e:
             return Response(
-                {"status": "error", "message": f"Zabbix service error: {str(e)}"},
+                {"status": "error", "message": f"{str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
             return Response(
-                {"status": "error", "message": f"Unexpected error: {str(e)}"},
+                {"status": "error", "message": "somthing went wrong , please try again later"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

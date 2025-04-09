@@ -24,3 +24,10 @@ var/
 *.sqlite3
 media/
 static/
+temp.json
+temp2.json
+temp3.json
+
+temp.py
+temp2.py
+temp3.py

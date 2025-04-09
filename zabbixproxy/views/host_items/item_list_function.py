@@ -7,18 +7,26 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zabbixproxy.views.credentials.zabbiz_login_function import (
-    ZabbixServiceError,
-    zabbix_login,
-)
+from utils import ServiceErrorHandler
+from zabbixproxy.models import ZabbixAuthToken
+from zabbixproxy.views.credentials.functions import zabbix_login
 
 api_url = settings.ZABBIX_API_URL
 username = settings.ZABBIX_ADMIN_USER
 password = settings.ZABBIX_ADMIN_PASSWORD
 
-logger = logging.getLogger(__name__)
+zabbix_logger = logging.getLogger("zabbix")
+django_logger = logging.getLogger("django")
 
-
+def get_zabbix_auth_token(self):
+        try:
+            return zabbix_login(
+                api_url=self.api_url, username=self.username, password=self.password
+            )
+        except ServiceErrorHandler as e:
+            raise ServiceErrorHandler(
+                f"{str(e)}"
+            )
 @csrf_exempt
 @require_POST
 def get_host_items(request):
@@ -35,13 +43,11 @@ def get_host_items(request):
             return JsonResponse({"error": "Missing hostids parameter"}, status=400)
 
         # Get auth token using the zabbix_login function
-        try:
-            auth_token = zabbix_login(api_url, username, password)
-        except ZabbixServiceError as e:
-            logger.error(f"Failed to authenticate with Zabbix: {str(e)}")
-            return JsonResponse(
-                {"error": "Failed to authenticate with Zabbix"}, status=500
-            )
+        auth_token = ZabbixAuthToken.objects.first()
+        if not auth_token:
+                auth_token = ZabbixAuthToken.get_or_create_token(
+                    get_zabbix_auth_token()
+                )
 
         # Prepare the request to Zabbix API
         zabbix_request = {
@@ -69,32 +75,49 @@ def get_host_items(request):
             timeout=15,
         )
 
-        # Check for HTTP errors
-        if response.status_code != 200:
-            logger.error(f"HTTP error from Zabbix API: {response.status_code}")
+        try:
+            response_data_for_log = response.json()
+        except ValueError:
+            zabbix_logger.error("Invalid JSON received from Zabbix.")
+            raise ServiceErrorHandler("Host creation please try again later")
+
+        if "error" in response_data_for_log:
+            error_info = response_data_for_log["error"]
+            error_code = error_info.get("code", "N/A")
+            error_message = error_info.get("message", "No message")
+            error_data = error_info.get("data", "")
+
+            zabbix_logger.error(
+                f"Zabbix API Error [{error_code}]: {error_message} - {error_data}"
+            )
+
             return JsonResponse(
-                {"error": f"Zabbix API returned HTTP {response.status_code}"},
+                 {
+                        "status":"error",
+                        "message":f"{error_message} - {error_data}",
+                 },
                 status=502,
             )
 
         # Parse the response
         result = response.json()
-
-        # Check for API errors
-        if "error" in result:
-            error_message = result["error"].get(
-                "data", result["error"].get("message", "Unknown error")
-            )
-            logger.error(f"Zabbix API error: {error_message}")
-            return JsonResponse(
-                {"error": f"Zabbix API error: {error_message}"}, status=502
-            )
-
         # Return the result directly
         return JsonResponse(result)
 
     except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON in request body"}, status=400)
+            return JsonResponse(
+                 {
+                        "status":"error",
+                        "message":"Invalid JSON in request body",
+                 },
+                status=400,
+            )
     except Exception as e:
-        logger.exception(f"Unexpected error in get_host_items: {str(e)}")
-        return JsonResponse({"error": "Internal server error"}, status=500)
+        django_logger.exception(f"Unexpected error in get_real_time_data: {str(e)}")
+        return JsonResponse(
+                 {
+                        "status":"error",
+                        "message":"Unexpected error occurred",
+                 },
+                status=500,
+            )

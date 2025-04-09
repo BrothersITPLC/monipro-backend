@@ -61,3 +61,29 @@ class ZabbixHost(models.Model):
 
     def __str__(self):
         return f"{self.host}-{self.hostid}"
+
+
+class ZabbixAuthToken(models.Model):
+    auth = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def get_or_create_token(cls, auth_value):
+        cls.objects.all().delete()
+        return cls.objects.create(auth=auth_value)
+
+    def __str__(self):
+        return self.auth
+
+# class ZabbixAuthToken(models.Model):
+#     auth = models.CharField(max_length=100, null=True, blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+#     @classmethod
+#     def get_or_create_token(cls, auth_value):
+#         cls.objects.all().delete()
+#         return cls.objects.create(auth=auth_value)
+
+#     def __str__(self):
+#         return self.auth

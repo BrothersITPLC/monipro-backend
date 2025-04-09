@@ -7,12 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.models import ZabbixUser, ZabbixUserGroup
-from zabbixproxy.views.credentials.user_creat_function import (
-    ZabbixServiceError,
-    create_user,
-)
-from zabbixproxy.views.credentials.zabbiz_login_function import zabbix_login
+from utils import ServiceErrorHandler
+from zabbixproxy.models import ZabbixAuthToken, ZabbixUser, ZabbixUserGroup
+from zabbixproxy.views.credentials.functions import create_user, zabbix_login
 
 
 class ZabbixUserCreationView(APIView):
@@ -27,12 +24,11 @@ class ZabbixUserCreationView(APIView):
             return zabbix_login(
                 api_url=self.api_url, username=self.username, password=self.password
             )
-        except ZabbixServiceError as e:
-            # Re-raise with more context
-            raise ZabbixServiceError(
-                f"Failed to obtain Zabbix authentication token: {str(e)}"
+        except ServiceErrorHandler as e:
+            raise ServiceErrorHandler(
+                f"{str(e)}"
             )
-
+        
     def post(self, request):
         """Creates a Zabbix User for the authenticated user."""
         user = request.user
@@ -68,19 +64,16 @@ class ZabbixUserCreationView(APIView):
                 {
                     "status": "success",
                     "message": "Zabbix user already exists",
-                    "user": {
-                        "id": existing_user.id,
-                        "username": existing_user.username,
-                        "zabbix_id": existing_user.userid,
-                        "role": existing_user.roleid,
-                    },
                 },
                 status=status.HTTP_200_OK,
             )
 
         try:
-            # Get auth token
-            zabbix_auth_token = self.get_zabbix_auth_token()
+            auth_token = ZabbixAuthToken.objects.first()
+            if not auth_token:
+                auth_token = ZabbixAuthToken.get_or_create_token(
+                    self.get_zabbix_auth_token()
+                )
 
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())
@@ -89,7 +82,7 @@ class ZabbixUserCreationView(APIView):
                 # Create user in Zabbix
                 userid = create_user(
                     self.api_url,
-                    zabbix_auth_token,
+                    auth_token,
                     username=zabbix_username,
                     password=self.default_password,
                     roleid=roleid,
@@ -111,23 +104,17 @@ class ZabbixUserCreationView(APIView):
                 {
                     "status": "success",
                     "message": "Zabbix user created successfully",
-                    "user": {
-                        "id": zabbix_user.id,
-                        "username": zabbix_user.username,
-                        "zabbix_id": userid,
-                        "role": roleid,
-                    },
                 },
                 status=status.HTTP_201_CREATED,
             )
 
-        except ZabbixServiceError as e:
+        except ServiceErrorHandler as e:
             return Response(
                 {"status": "error", "message": f"Zabbix service error: {str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
             return Response(
-                {"status": "error", "message": f"Unexpected error: {str(e)}"},
+                {"status": "error", "message": "Unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

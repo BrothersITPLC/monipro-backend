@@ -10,7 +10,7 @@ class UserManager(BaseUserManager):
     def create_user(
         self,
         email,
-        name,
+  
         password=None,
         password2=None,
         **extra_fields,
@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
             raise ValueError("Passwords don't match")
         user = self.model(
             email=self.normalize_email(email),
-            name=name,
+       
         )
         user.set_password(password)
         user.save(using=self._db)
@@ -38,7 +38,6 @@ class UserManager(BaseUserManager):
 
         user = self.create_user(
             email,
-            name,
             password,
             password2=password,
             **extra_fields,
@@ -50,10 +49,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    ROLE = [
-        ("is_organization", "Admin"),
-        ("is_team", "Team Member"),
-    ]
     email = models.EmailField(verbose_name="Email", max_length=255, unique=True)
     name = models.CharField(verbose_name="user name", max_length=200, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
@@ -63,9 +58,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(
         verbose_name="Last name", max_length=100, blank=True, null=True
     )
-    role = models.CharField(max_length=20, choices=ROLE, default="is_organization")
     is_private = models.BooleanField(default=False)
-    is_organization_completed_information = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "customers.OrganizationInfo",
         on_delete=models.SET_NULL,
@@ -76,6 +69,8 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
+    is_from_social=models.BooleanField(default=False)
+    social_and_local_is_linked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

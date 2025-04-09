@@ -3,11 +3,10 @@ from django.urls import path
 from .views import (
     ForgotPasswordView,
     GoogleExchangeView,
+    InitialRegistrationView,
     Login,
     Logout,
-    OrganizationInitialRegistrationView,
     PasswordResetView,
-    PrivateInitialRegistrationView,
     TeamUserByOrganizationView,
     TeamUserView,
     UserProfileView,
@@ -16,15 +15,11 @@ from .views import (
 
 urlpatterns = [
     path(
-        "organization-register/",
-        OrganizationInitialRegistrationView.as_view(),
-        name="organization-register",
+        "initial-register/",
+        InitialRegistrationView.as_view(),
+        name="initial-register",
     ),
-    path(
-        "private-register/",
-        PrivateInitialRegistrationView.as_view(),
-        name="private-register",
-    ),
+
     path("verify/", VerifyRegistrationOtp.as_view(), name="verify"),
     path("login/", Login.as_view(), name="login"),
     path("logout/", Logout.as_view(), name="logout"),

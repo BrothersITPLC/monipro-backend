@@ -5,17 +5,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from ..serializers import LoginSerializer
+from users.serializers import LoginSerializer
+from utils import ServiceErrorHandler
 
 
 class Login(APIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        try:
+            serializer = LoginSerializer(data=request.data, context={"request": request})
+            serializer.is_valid(raise_exception=True)
             user = serializer.validated_data.get("user")
-        if user is not None:
+
             # Generate tokens using Simple JWT
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
@@ -25,74 +27,10 @@ class Login(APIView):
             csrf_token = get_token(request)
 
             # Prepare user data
-            if user.role == "is_organization":
-                user_data = {
-                    "user_id": user.id,
-                    "user_name": user.name,
-                    "user_email": user.email,
-                    "is_organization": True,
-                    "is_private": user.is_private
-                    if user.role == "is_organization"
-                    else False,
-                    "organization_info_completed": bool(
-                        user.is_organization_completed_information
-                    ),
-                }
-                if user.is_organization_completed_information:
-                    user_data["organization_id"] = user.organization.id
-                    user_data["organization_phone"] = (
-                        user.organization.organization_phone
-                    )
-                    user_data["organization_website"] = (
-                        user.organization.organization_website
-                    )
-                    user_data["organization_description"] = (
-                        user.organization.organization_description
-                    )
-                    user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane.name
-                    )
-                    user_data["organization_payment_duration"] = (
-                        user.organization.organization_payment_duration.name
-                    )
-                    user_data["organization_name"] = user.organization.organization_name
-            else:
-                user_data = {
-                    "user_id": user.id,
-                    "user_name": user.name,
-                    "user_email": user.email,
-                    "is_organization": True
-                    if user.role == "is_organization"
-                    else False,
-                    "organization_info_completed": user.is_organization_completed_information,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "phone": user.phone,
-                }
-                if user.is_organization_completed_information:
-                    user_data["organization_id"] = user.organization.id
-                    user_data["organization_phone"] = (
-                        user.organization.organization_phone
-                    )
-                    user_data["organization_website"] = (
-                        user.organization.organization_website
-                    )
-                    user_data["organization_description"] = (
-                        user.organization.organization_description
-                    )
-                    user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane.name
-                    )
-                    user_data["organization_payment_duration"] = (
-                        user.organization.organization_payment_duration.name
-                    )
-                    user_data["organization_name"] = user.organization.organization_name
-
             response = Response(
                 {
                     "status": "success",
                     "message": "User Login Successfully",
-                    "user_data": user_data,
                     "csrf_token": csrf_token,
                 },
                 status=status.HTTP_200_OK,
@@ -125,3 +63,16 @@ class Login(APIView):
                 max_age=cookie_settings.get("REFRESH_MAX_AGE", 604800),
             )
             return response
+        
+        except ServiceErrorHandler as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": "Something went wrong. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        
