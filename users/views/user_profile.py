@@ -21,8 +21,9 @@ class UserProfileView(APIView):
                 },
                 status=status.HTTP_200_OK
             )
-        
+
         except AttributeError as e:
+            print(f"Error: {e}")
             return Response(
                 {
                     "status": "error",
@@ -30,7 +31,7 @@ class UserProfileView(APIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-        
+
         except Exception as e:
             return Response(
                 {

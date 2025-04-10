@@ -10,9 +10,10 @@ User = get_user_model()
 
 class OrganizationInfoSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only=True, required=True)
-    
+
     first_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     last_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    is_private = serializers.BooleanField(required=False)
     organization_description = serializers.CharField(required=False, allow_blank=True)
     organization_website = serializers.URLField(required=False, allow_blank=True)
 
@@ -99,7 +100,6 @@ class OrganizationInfoSerializer(serializers.ModelSerializer):
             user.organization = organization
             user.phone = validated_data["organization_phone"]
             user.is_private = is_private
-
 
             if is_private:
                 user.first_name = first_name or None

@@ -20,7 +20,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     organization_phone = serializers.CharField(source='organization.organization_phone', allow_null=True)
     organization_website = serializers.URLField(source='organization.organization_website', allow_null=True)
     organization_description = serializers.CharField(source='organization.organization_description', allow_null=True)
-    organization_payment_plane = serializers.SerializerMethodField()
+    organization_payment_plan = serializers.SerializerMethodField()
     organization_payment_duration = serializers.SerializerMethodField()
 
     class Meta:
@@ -31,7 +31,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'user_have_zabbix_credentials', 'user_have_zabbix_user',
             'organization_id', 'organization_name', 'organization_phone',
             'organization_website', 'organization_description',
-            'organization_payment_plane', 'organization_payment_duration'
+            'organization_payment_plan', 'organization_payment_duration'
         ]
 
     def get_organization_info_completed(self, obj):
@@ -44,11 +44,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_user_have_zabbix_user(self, obj):
         return ZabbixUser.objects.filter(user=obj).exists()
 
-    def get_organization_payment_plane(self, obj):
+    def get_organization_payment_plan(self, obj):
         if not hasattr(obj, 'organization') or not obj.organization:
             return None
-        return obj.organization.organization_payment_plane.name \
-            if obj.organization.organization_payment_plane else None
+        return obj.organization.organization_payment_plan.name \
+            if obj.organization.organization_payment_plan else None
 
     def get_organization_payment_duration(self, obj):
         if not hasattr(obj, 'organization') or not obj.organization:

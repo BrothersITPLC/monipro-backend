@@ -82,11 +82,12 @@ class ZabbixHostCreationView(APIView):
                  "message": "network type is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if not network_device_type:
-            return Response(
-                {"status": "error",
-                 "message": "network device type is required"},
-                status=status.HTTP_400_BAD_REQUEST,
+        if device_type != "vm":
+            if not network_device_type:
+                return Response(
+                    {"status": "error",
+                    "message": "network device type is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
             )
         if not device_type:
             return Response(
