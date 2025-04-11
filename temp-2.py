@@ -8,9 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
-
-# Import the create_zabbix_agent function
-from zabbixproxy.ansibal.functions.ansibal_runner import create_zabbix_agent
 from zabbixproxy.models import ZabbixAuthToken, ZabbixHost, ZabbixHostGroup
 from zabbixproxy.views.credentials.functions import zabbix_login
 from zabbixproxy.views.host_items.functions import create_host
@@ -40,8 +37,7 @@ class ZabbixHostCreationView(APIView):
         dns = ""
         host_template = 10001
         port = 10050
-        tags = "install"  # Default tag for Ansible
-        useip = 1
+        tags = "install"
 
         # Get values from request data properly
         if "ip" in request_data:
@@ -56,8 +52,7 @@ class ZabbixHostCreationView(APIView):
         # Get host from request data
         host = request_data.get("host")
         ip = request_data.get("ip")
-        password = request_data.get("password")
-        username = request_data.get("username", "")
+        password = request_data.get("ip")
         network_type = request_data.get("network_type")
         network_device_type = request_data.get("network_device_type")
         device_type = request_data.get("device_type")
@@ -68,12 +63,10 @@ class ZabbixHostCreationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if not ip:
-            useip = 0
-            if not dns:
-                return Response(
-                    {"status": "error", "message": "Ip and dns are required"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            return Response(
+                {"status": "error", "message": "Ip is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not password:
             return Response(
                 {"status": "error", "message": "password is required"},
@@ -139,38 +132,9 @@ class ZabbixHostCreationView(APIView):
 
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())
-
             # Use transaction to ensure database consistency
             with atomic_context:
-                # First, deploy Zabbix agent using Ansible
-                agent_response = create_zabbix_agent(
-                    port=port,
-                    target_host=ip,
-                    username=username,
-                    hostname=host,
-                    password=password,
-                    tags=tags,
-                )
-
-                # Check if agent deployment was successful
-                if not isinstance(
-                    agent_response, Response
-                ) or not agent_response.data.get("overall_success", False):
-                    # If agent deployment failed, raise an error
-                    error_message = "Failed to deploy Zabbix agent"
-                    if isinstance(agent_response, Response) and agent_response.data.get(
-                        "errors"
-                    ):
-                        error_details = ", ".join(
-                            [
-                                e.get("error", "")
-                                for e in agent_response.data.get("errors", [])
-                            ]
-                        )
-                        error_message += f": {error_details}"
-                    raise ServiceErrorHandler(error_message)
-
-                # If agent deployment was successful, proceed with host creation
+                # Create host in Zabbix
                 hostid = create_host(
                     self.api_url,
                     auth_token,
@@ -179,7 +143,6 @@ class ZabbixHostCreationView(APIView):
                     ip=ip,
                     port=port,
                     dns=dns,
-                    useip=useip,
                     host_template=host_template,
                 )
 
@@ -194,8 +157,8 @@ class ZabbixHostCreationView(APIView):
                     host_template=host_template,
                     device_type=request_data.get("device_type", ""),
                     network_device_type=request_data.get("network_device_type", ""),
-                    username=username,
-                    password=password,
+                    username=request_data.get("username", ""),
+                    password=request_data.get("password", ""),
                     network_type=request_data.get("network_type", ""),
                 )
 
@@ -203,7 +166,7 @@ class ZabbixHostCreationView(APIView):
             return Response(
                 {
                     "status": "success",
-                    "message": "Host and Zabbix agent created successfully",
+                    "message": "Host created successfully",
                     "host_id": hostid,
                 },
                 status=status.HTTP_201_CREATED,
@@ -214,15 +177,11 @@ class ZabbixHostCreationView(APIView):
                 {"status": "error", "message": f"{str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-        except Exception as e:
-            # Added error logging
-            import logging
-
-            logging.exception(f"Error creating Zabbix host: {str(e)}")
+        except Exception:
             return Response(
                 {
                     "status": "error",
-                    "message": "Something went wrong, please try again later",
+                    "message": "somthing went wrong , please try again later",
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

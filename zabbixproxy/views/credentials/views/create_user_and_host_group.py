@@ -28,9 +28,7 @@ class HostAndUserGroupCreationView(APIView):
                 api_url=self.api_url, username=self.username, password=self.password
             )
         except ServiceErrorHandler as e:
-            raise ServiceErrorHandler(
-                f"{str(e)}"
-            )
+            raise ServiceErrorHandler(f"{str(e)}")
 
     def post(self, request):
         """Creates a Zabbix Host Group and User Group for the authenticated user's organization."""
@@ -45,8 +43,12 @@ class HostAndUserGroupCreationView(APIView):
             )
 
         # Create names for host group and user group
-        zabbix_host_group_name = f"{organization.organization_name}_zabbix_host_group"
-        zabbix_user_group_name = f"{organization.organization_name}_zabbix_user_group"
+        zabbix_host_group_name = (
+            f"{organization.organization_name}_{user.email}_zabbix_host_group"
+        )
+        zabbix_user_group_name = (
+            f"{organization.organization_name}_{user.email}_zabbix_user_group"
+        )
 
         # Default values
         permission = 3  # read-write permission for user group
@@ -132,7 +134,6 @@ class HostAndUserGroupCreationView(APIView):
                 {
                     "status": "success",
                     "message": "Zabbix resources created successfully",
-               
                 },
                 status=status.HTTP_201_CREATED
                 if not (existing_host_group and existing_user_group)
@@ -144,7 +145,7 @@ class HostAndUserGroupCreationView(APIView):
                 {"status": "error", "message": f"Zabbix service error: {str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-        except Exception as e:
+        except Exception:
             return Response(
                 {"status": "error", "message": "Unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

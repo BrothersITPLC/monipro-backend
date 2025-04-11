@@ -25,10 +25,8 @@ class ZabbixUserCreationView(APIView):
                 api_url=self.api_url, username=self.username, password=self.password
             )
         except ServiceErrorHandler as e:
-            raise ServiceErrorHandler(
-                f"{str(e)}"
-            )
-        
+            raise ServiceErrorHandler(f"{str(e)}")
+
     def post(self, request):
         """Creates a Zabbix User for the authenticated user."""
         user = request.user
@@ -43,11 +41,7 @@ class ZabbixUserCreationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Use first_name + last_name as Zabbix username
-        zabbix_username = f"{user.first_name}{user.last_name}"
-        if not zabbix_username.strip():
-            # Fallback to email if name is empty
-            zabbix_username = user.email
+        zabbix_username = f"{user.email}"
 
         # Default role is admin (1)
         roleid = request.data.get("roleid", 1)
@@ -113,7 +107,7 @@ class ZabbixUserCreationView(APIView):
                 {"status": "error", "message": f"Zabbix service error: {str(e)}"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-        except Exception as e:
+        except Exception:
             return Response(
                 {"status": "error", "message": "Unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

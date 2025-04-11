@@ -15,6 +15,7 @@ def create_host(
     ip,
     port,
     dns,
+    useip,
     host_template,
     max_retries=3,
     retry_delay=2,
@@ -61,7 +62,7 @@ def create_host(
                             {
                                 "type": 1,
                                 "main": 1,
-                                "useip": 1,
+                                "useip": useip,
                                 "ip": ip,
                                 "dns": dns,
                                 "port": port,
@@ -117,7 +118,9 @@ def create_host(
                     "Authentication error during host creation, token may be invalid"
                 )
                 raise
-            zabbix_logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
+            zabbix_logger.error(
+                f"Zabbix service error (attempt {attempt + 1}): {str(e)}"
+            )
         except Exception as e:
             zabbix_logger.error(
                 f"Unexpected error during host creation (attempt {attempt + 1}): {str(e)}"
@@ -129,6 +132,4 @@ def create_host(
 
     # If we get here, all retries failed
     zabbix_logger.critical(f"Host creation failed after {max_retries} attempts")
-    raise ServiceErrorHandler(
-        f"Host creation failed please try again later"
-    )
+    raise ServiceErrorHandler("Host creation failed please try again later")

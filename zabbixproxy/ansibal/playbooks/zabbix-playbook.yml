@@ -1,0 +1,124 @@
+---
+- name: Install and configure Zabbix Agent 7.2 on Ubuntu 24.04
+  hosts: all
+  become: true
+  become_method: sudo
+
+  tasks:
+    # Cleanup tasks with tag for selective execution
+    - name: CLEANUP - Stop Zabbix agent service
+      systemd:
+        name: zabbix-agent
+        state: stopped
+      ignore_errors: true
+      tags: cleanup
+
+    - name: CLEANUP - Remove Zabbix agent package
+      apt:
+        name: zabbix-agent
+        state: absent
+        purge: yes
+      ignore_errors: true
+      tags: cleanup
+
+    - name: CLEANUP - Remove Zabbix repository
+      apt:
+        name: zabbix-release
+        state: absent
+        purge: yes
+      ignore_errors: true
+      tags: cleanup
+
+    - name: CLEANUP - Remove Zabbix configuration directory
+      file:
+        path: /etc/zabbix
+        state: absent
+      ignore_errors: true
+      tags: cleanup
+
+    - name: CLEANUP - Remove downloaded package
+      file:
+        path: /tmp/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+        state: absent
+      ignore_errors: true
+      tags: cleanup
+
+    - name: CLEANUP - Close firewall port
+      ansible.posix.firewalld:
+        port: "{{ port | default('10050') }}/tcp"
+        permanent: true
+        immediate: true
+        state: disabled
+      ignore_errors: true
+      tags: cleanup
+
+    # Original installation tasks
+    - name: Download Zabbix release package
+      get_url:
+        url: https://repo.zabbix.com/zabbix/7.2/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+        dest: /tmp/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+      tags: install
+
+    - name: Install Zabbix release package
+      apt:
+        deb: /tmp/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+        state: present
+      tags: install
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      tags: install
+
+    - name: Open specified TCP port in firewalld
+      ansible.posix.firewalld:
+        port: "{{ port | default('10050') }}/tcp"
+        permanent: true
+        immediate: true
+        state: enabled
+      tags: install
+
+    - name: Install Zabbix agent
+      apt:
+        name: zabbix-agent
+        state: present
+      tags: install
+
+    - name: Set ServerActive (Active Checks)
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^ServerActive="
+        line: "ServerActive=zx.brothersit.dev"
+        backup: yes
+      notify: Restart Zabbix agent
+      tags: install
+
+    - name: Set Hostname for Zabbix Agent
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^Hostname="
+        line: "Hostname=amcsis"
+        backup: yes
+      notify: Restart Zabbix agent
+      tags: install
+
+    - name: Set RefreshActiveChecks (optional)
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^RefreshActiveChecks="
+        line: "RefreshActiveChecks=120"
+        backup: yes
+      notify: Restart Zabbix agent
+      tags: install
+
+    - name: Ensure Zabbix agent is enabled
+      systemd:
+        name: zabbix-agent
+        enabled: yes
+      tags: install
+
+  handlers:
+    - name: Restart Zabbix agent
+      systemd:
+        name: zabbix-agent
+        state: restarted

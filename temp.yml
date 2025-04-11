@@ -1,0 +1,67 @@
+---
+- name: Install and configure Zabbix Agent 7.2 on Ubuntu 24.04
+  hosts: all
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Download Zabbix release package
+      get_url:
+        url: https://repo.zabbix.com/zabbix/7.2/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+        dest: /tmp/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+
+    - name: Install Zabbix release package
+      apt:
+        deb: /tmp/zabbix-release_latest_7.2+ubuntu24.04_all.deb
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Open specified TCP port in firewalld
+      ansible.posix.firewalld:
+        port: "{{ port }}/tcp"
+        permanent: true
+        immediate: true
+        state: enabled
+
+    - name: Install Zabbix agent
+      apt:
+        name: zabbix-agent
+        state: present
+
+    - name: Set ServerActive (Active Checks)
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^ServerActive="
+        line: "ServerActive=zx.brothersit.dev"
+        backup: yes
+      notify: Restart Zabbix agent
+
+    - name: Set Hostname for Zabbix Agent
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^Hostname="
+        line: "Hostname=amcsis"
+        backup: yes
+      notify: Restart Zabbix agent
+
+    - name: Set RefreshActiveChecks (optional)
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^RefreshActiveChecks="
+        line: "RefreshActiveChecks=120"
+        backup: yes
+      notify: Restart Zabbix agent
+
+    - name: Ensure Zabbix agent is enabled
+      systemd:
+        name: zabbix-agent
+        enabled: yes
+
+  handlers:
+    - name: Restart Zabbix agent
+      systemd:
+        name: zabbix-agent
+        state: restarted
