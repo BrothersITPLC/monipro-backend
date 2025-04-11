@@ -10,12 +10,11 @@ from utils import ServiceErrorHandler
 class OrganizationInfoCreateView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = OrganizationInfoSerializer(
-            data=request.data,
-            context={'request': request}
+            data=request.data, context={"request": request}
         )
 
         try:
-            serializer.is_valid(raise_exception=True)  
+            serializer.is_valid(raise_exception=True)
             organization = serializer.save()
 
             return Response(
@@ -33,11 +32,16 @@ class OrganizationInfoCreateView(APIView):
             )
 
         except Exception as e:
+            if "phone" in str(e).lower():
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "Phone number must be in the format +998XXXXXXXX",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             print(f"Unexpected error: {e}")
             return Response(
-                {
-                    "status": "error",
-                    "message": "An unexpected error occurred"
-                },
+                {"status": "error", "message": "An unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

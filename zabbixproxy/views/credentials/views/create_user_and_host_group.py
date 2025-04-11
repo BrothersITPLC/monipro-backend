@@ -43,12 +43,8 @@ class HostAndUserGroupCreationView(APIView):
             )
 
         # Create names for host group and user group
-        zabbix_host_group_name = (
-            f"{organization.organization_name}_{user.email}_zabbix_host_group"
-        )
-        zabbix_user_group_name = (
-            f"{organization.organization_name}_{user.email}_zabbix_user_group"
-        )
+        zabbix_host_group_name = f"{user.email}_zabbix_host_group"
+        zabbix_user_group_name = f"{user.email}_zabbix_user_group"
 
         # Default values
         permission = 3  # read-write permission for user group
