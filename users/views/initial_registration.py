@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.utils import timezone
@@ -11,6 +12,8 @@ from users.models import OTP, RegistrationAttempt, User, generate_unique_otp
 from users.serializers import InitialRegistrationSerializer
 from utils import ServiceErrorHandler
 from utils.otp_send_email import send_otp_via_email
+
+django_logger = logging.getLogger("django")
 
 
 class InitialRegistrationView(APIView):
@@ -93,7 +96,7 @@ class InitialRegistrationView(APIView):
     )
     def post(self, request):
         serializer = InitialRegistrationSerializer(data=request.data)
-        
+
         try:
             # Validation
             serializer.is_valid(raise_exception=True)
@@ -104,9 +107,11 @@ class InitialRegistrationView(APIView):
             recent_attempts = RegistrationAttempt.objects.filter(
                 email=email, attempt_time__gte=two_hours_ago
             ).count()
-            
+
             if recent_attempts >= 5:
-                raise ServiceErrorHandler("Too many registration attempts. Please try again later.")
+                raise ServiceErrorHandler(
+                    "Too many registration attempts. Please try again later."
+                )
 
             # Create attempt record
             attempt = RegistrationAttempt.objects.create(email=email)
@@ -117,69 +122,72 @@ class InitialRegistrationView(APIView):
                 user = user_exists.first()
                 if user.is_verified:
                     raise ServiceErrorHandler("User with this email already exists")
-                
+
                 # Handle existing unverified user
                 existing_otp = OTP.objects.filter(user=user, is_used=False).first()
                 otp_code = generate_unique_otp(user)
-                
+
                 # Send OTP
                 success, message = send_otp_via_email(email, otp_code)
                 if not success:
+                    django_logger.info(f"Failed to send OTP email: {message}")
                     raise ServiceErrorHandler("Failed to send OTP: Please try again.")
-                
+
                 # Update/create OTP
                 if existing_otp:
                     existing_otp.otp_code = otp_code
                     existing_otp.save()
                 else:
                     OTP.objects.create(user=user, otp_code=otp_code)
-                    
+
                 attempt.successful = True
                 attempt.save()
                 return Response(
                     {"status": "success", "message": "OTP sent successfully"},
-                    status=status.HTTP_201_CREATED
+                    status=status.HTTP_201_CREATED,
                 )
 
             # New user registration
             otp_code = generate_unique_otp(None)  # Pass None for unsaved user
             success, message = send_otp_via_email(email, otp_code)
-            
+
             if not success:
                 raise ServiceErrorHandler("Failed to send OTP: Please try again.")
-            
+
             # Save user only after successful email send
             user = serializer.save()
             OTP.objects.create(user=user, otp_code=otp_code)
-            
+
             attempt.successful = True
             attempt.save()
-            
+
             return Response(
-                {"status": "success", "message": "User registered successfully, please check your email for the OTP."},
-                status=status.HTTP_201_CREATED
+                {
+                    "status": "success",
+                    "message": "User registered successfully, please check your email for the OTP.",
+                },
+                status=status.HTTP_201_CREATED,
             )
 
         except ServiceErrorHandler as e:
             # Determine status code based on message content
             message = str(e)
             status_code = status.HTTP_400_BAD_REQUEST
-            
+
             if "Too many registration" in message:
                 status_code = status.HTTP_429_TOO_MANY_REQUESTS
             elif "already exists" in message:
                 status_code = status.HTTP_400_BAD_REQUEST
             elif "Failed to send OTP" in message:
                 status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-                
-            return Response(
-                {"status": "error", "message": message},
-                status=status_code
-            )
+
+            return Response({"status": "error", "message": message}, status=status_code)
         except Exception as e:
             print(f"Unexpected error: {e}")
             return Response(
-                {"status": "error", "message": "An unexpected error occurred, please try again."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {
+                    "status": "error",
+                    "message": "An unexpected error occurred, please try again.",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-

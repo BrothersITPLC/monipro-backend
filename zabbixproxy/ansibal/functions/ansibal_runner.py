@@ -4,11 +4,10 @@ import tempfile
 
 import ansible_runner
 from django.conf import settings
-from rest_framework import status
-from rest_framework.response import Response
+
+from utils import ServiceErrorHandler
 
 ansible_logger = logging.getLogger("ansibal")
-from utils import ServiceErrorHandler
 
 
 def sanitize_error(error):
@@ -21,7 +20,6 @@ def sanitize_error(error):
 
 
 def format_response(runner, target_host):
-    success = runner.status == "successful"
     tasks = []
     errors = []
 
@@ -40,13 +38,15 @@ def format_response(runner, target_host):
                 )
             else:
                 error_msg = sanitize_error(result.get("msg", "Unknown error"))
-                errors.append({"task": task, "error": error_msg})
+                errors.append({"task": task, "status": "error", "details": error_msg})
+
+    success = True if len(errors) == 0 else False
 
     return {
         "host": target_host,
         "overall_success": success,
-        "executed_tasks": tasks,
-        "errors": errors,
+        "successfully_executed_tasks": tasks,
+        "unsuccessfully_executed_tasks": errors,
         "stats": {
             "total_tasks": len(tasks) + len(errors),
             "successful": len(tasks),
@@ -85,7 +85,7 @@ def create_zabbix_agent(port, target_host, username, hostname, password, tags=No
 
             # Create the runner configuration
             runner_config = {
-                "playbook": settings.PLAYBOOK_PATH,
+                "playbook": settings.ZABBIX_PLAYBOOK_PATH,
                 "inventory": inv_file.name,
                 "extravars": {"port": port},
                 "quiet": False,
@@ -105,7 +105,7 @@ def create_zabbix_agent(port, target_host, username, hostname, password, tags=No
             ansible_logger.error(f"Ansible stdout:\n{runner.stdout.read()}")
 
             formatted = format_response(runner, target_host)
-            return Response(formatted, status=status.HTTP_200_OK)
+            return formatted
 
     except Exception as e:
         ansible_logger.exception(

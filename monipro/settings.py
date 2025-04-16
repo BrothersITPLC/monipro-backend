@@ -105,7 +105,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.github",
     "social_django",
     "allauth.headless",
-    "django_cron"
+    "django_cron",
 ]
 AUTH_USER_MODEL = "users.User"
 
@@ -194,24 +194,17 @@ TEMPLATES = [
 WSGI_APPLICATION = "monipro.wsgi.application"
 
 # FOR CONTAINERIZATION
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
-#         "USER": os.getenv("POSTGRES_USER", "moniprouser"),
-#         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
-#         "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
-#         "PORT": os.getenv("DATABASE_PORT", "5432"),
-#     }
-# }
-
-# FOR LOCALHOST
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+        "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
+
 
 # FOR TEST
 # DATABASES = {
@@ -346,9 +339,7 @@ LOGGING = {
     },
 }
 
-CRONJOBS = [
-    ('0 0 * * *', 'jobs.functions.DeleteOldTokensCronJob')
-]
+CRONJOBS = [("0 0 * * *", "jobs.functions.DeleteOldTokensCronJob")]
 PLAYBOOK_PATH = os.path.join(
     BASE_DIR, "zabbixproxy", "ansibal", "playbooks", "playbook.yml"
 )
@@ -356,3 +347,14 @@ PLAYBOOK_PATH = os.path.join(
 ZABBIX_PLAYBOOK_PATH = os.path.join(
     BASE_DIR, "zabbixproxy", "ansibal", "playbooks", "zabbix-playbook.yml"
 )
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "monipro.settings")
+# Update Redis connection settings to use the service name instead of localhost
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+
+# Additional Celery settings
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE

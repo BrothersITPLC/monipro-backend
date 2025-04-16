@@ -1,0 +1,52 @@
+{
+    "host": "52.143.159.19",
+    "overall_success": true,
+    "executed_tasks": [
+        {
+            "task": "Gathering Facts",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Stop Zabbix agent service",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Remove Zabbix agent package",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Remove Zabbix repository",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Remove Zabbix configuration directory",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Remove downloaded package",
+            "status": "success",
+            "details": "Task completed"
+        },
+        {
+            "task": "CLEANUP - Check if ufw is installed",
+            "status": "success",
+            "details": ""
+        },
+        {
+            "task": "CLEANUP - Close port with ufw if available",
+            "status": "success",
+            "details": ""
+        }
+    ],
+    "errors": [],
+    "stats": {
+        "total_tasks": 8,
+        "successful": 8,
+        "failed": 0
+    }
+}

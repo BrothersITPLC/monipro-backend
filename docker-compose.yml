@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   moni_pro:
     image: postgres:16
@@ -27,6 +26,39 @@ services:
       - moni-pro-net
     depends_on:
       - moni_pro
+      - redis
+    restart: always
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - moni-pro-net
+    restart: always
+  redis-commander:
+    image: rediscommander/redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    networks:
+      - moni-pro-net
+    depends_on:
+      - redis
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A monipro worker -l info
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - moni-pro-net
+    depends_on:
+      - redis
+      - django_server
     restart: always
 volumes:
   postgres_primary_db:

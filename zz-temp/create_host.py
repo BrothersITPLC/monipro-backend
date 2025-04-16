@@ -1,7 +1,7 @@
-import logging
 from typing import Any, cast
 
 from django.conf import settings
+from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,15 +10,10 @@ from rest_framework.views import APIView
 from utils import ServiceErrorHandler
 
 # Import the create_zabbix_agent function
+from zabbixproxy.ansibal.functions.ansibal_runner import create_zabbix_agent
 from zabbixproxy.models import ZabbixAuthToken, ZabbixHost, ZabbixHostGroup
-
-# Update imports
-from zabbixproxy.tasks import (
-    create_host_workflow,
-)
 from zabbixproxy.views.credentials.functions import zabbix_login
-
-django_logger = logging.getLogger("django")
+from zabbixproxy.views.host_items.functions import create_host
 
 
 class ZabbixHostCreationView(APIView):
@@ -45,7 +40,7 @@ class ZabbixHostCreationView(APIView):
         dns = ""
         host_template = 10001
         port = 10050
-        tags = "install"  # Default tag for Ansible playbook
+        tags = "install"  # Default tag for Ansible
         useip = 1
 
         # Get values from request data properly
@@ -61,15 +56,12 @@ class ZabbixHostCreationView(APIView):
         # Get host from request data
         host = request_data.get("host")
         ip = request_data.get("ip")
-        password = request_data.get(
-            "password"
-        )  # Fixed: was using ip instead of password
-        username = request_data.get("username", "")  # Added username extraction
+        password = request_data.get("password")
+        username = request_data.get("username", "")
         network_type = request_data.get("network_type")
         network_device_type = request_data.get("network_device_type")
         device_type = request_data.get("device_type")
 
-        # Validate required fields
         if not host:
             return Response(
                 {"status": "error", "message": "Host name is required"},
@@ -138,45 +130,95 @@ class ZabbixHostCreationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # In the post method, replace the task creation code with:
         try:
-            auth_token = cast(Any,ZabbixAuthToken).objects.first()
+            auth_token = ZabbixAuthToken.objects.first()
             if not auth_token:
                 auth_token = ZabbixAuthToken.get_or_create_token(
                     self.get_zabbix_auth_token()
                 )
-        
-            # Start the workflow task
-            workflow_task = create_host_workflow.delay(
-                user_id=user.id,
-                host=host,
-                ip=ip,
-                port=port,
-                username=username,
-                password=password,
-                dns=dns,
-                useip=useip,
-                host_template=host_template,
-                hostgroup=hostgroup,
-                api_url=self.api_url,
-                auth_token=auth_token.auth,  # Pass the token string value instead of the object
-                device_type=device_type,
-                network_device_type=network_device_type or "",
-                network_type=network_type,
-                tags=tags
-            )
-        
-            # Return a response immediately with task ID
+
+            # Fix for transaction.atomic() type issue
+            atomic_context = cast(Any, transaction.atomic())
+
+            # Use transaction to ensure database consistency
+            with atomic_context:
+                # First, deploy Zabbix agent using Ansible
+                agent_response = create_zabbix_agent(
+                    port=port,
+                    target_host=ip,
+                    username=username,
+                    hostname=host,
+                    password=password,
+                    tags=tags,
+                )
+
+                # Check if agent deployment was successful
+                if not isinstance(
+                    agent_response, Response
+                ) or not agent_response.data.get("overall_success", False):
+                    # If agent deployment failed, raise an error
+                    error_message = "Failed to deploy Zabbix agent"
+                    if isinstance(agent_response, Response) and agent_response.data.get(
+                        "errors"
+                    ):
+                        error_details = ", ".join(
+                            [
+                                e.get("error", "")
+                                for e in agent_response.data.get("errors", [])
+                            ]
+                        )
+                        error_message += f": {error_details}"
+                    raise ServiceErrorHandler(error_message)
+
+                # If agent deployment was successful, proceed with host creation
+                hostid = create_host(
+                    self.api_url,
+                    auth_token,
+                    hostgroup=hostgroup,
+                    host=host,
+                    ip=ip,
+                    port=port,
+                    dns=dns,
+                    useip=useip,
+                    host_template=host_template,
+                )
+
+                # Create host record in our database
+                zabbix_host = cast(Any, ZabbixHost).objects.create(
+                    hostgroup=hostgroup_obj,
+                    hostid=hostid,
+                    host=host,
+                    ip=ip,
+                    port=port,
+                    dns=dns,
+                    host_template=host_template,
+                    device_type=request_data.get("device_type", ""),
+                    network_device_type=request_data.get("network_device_type", ""),
+                    username=username,
+                    password=password,
+                    network_type=request_data.get("network_type", ""),
+                )
+
+            # Return success response
             return Response(
                 {
-                    "status": "success",  # Fixed typo: "sucess" -> "success"
-                    "message": "Host creation started, you will get notified after 2 minutes",  # Fixed typo: "notfied" -> "notified"
+                    "status": "success",
+                    "message": "Host and Zabbix agent created successfully",
+                    "host_id": hostid,
                 },
-                status=status.HTTP_202_ACCEPTED,
+                status=status.HTTP_201_CREATED,
             )
 
+        except ServiceErrorHandler as e:
+            return Response(
+                {"status": "error", "message": f"{str(e)}"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         except Exception as e:
-            django_logger.exception(f"Error creating Zabbix host: {str(e)}")
+            # Added error logging
+            import logging
+
+            logging.exception(f"Error creating Zabbix host: {str(e)}")
             return Response(
                 {
                     "status": "error",

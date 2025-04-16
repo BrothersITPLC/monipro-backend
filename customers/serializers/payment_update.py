@@ -9,17 +9,17 @@ class OrganizationPaymentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationInfo
         fields = [
-            "organization_payment_plane",
+            "organization_payment_plan",  # Fixed typo from "plane" to "plan"
             "organization_payment_duration",
         ]
 
     def validate(self, data):
-        payment_plan = data.get("organization_payment_plane")
+        payment_plan = data.get("organization_payment_plan")  # Fixed typo
         duration = data.get("organization_payment_duration")
 
         if not payment_plan:
             raise serializers.ValidationError(
-                {"organization_payment_plane": "Payment plan is required"}
+                {"organization_payment_plan": "Payment plan is required"}  # Fixed typo
             )
 
         if not duration:
@@ -30,7 +30,7 @@ class OrganizationPaymentUpdateSerializer(serializers.ModelSerializer):
         # Validate if the payment plan exists
         if not PaymentPlan.objects.filter(id=payment_plan.id).exists():
             raise serializers.ValidationError(
-                {"organization_payment_plane": "Invalid payment plan selected"}
+                {"organization_payment_plan": "Invalid payment plan selected"}  # Fixed typo
             )
 
         # Validate if the duration exists

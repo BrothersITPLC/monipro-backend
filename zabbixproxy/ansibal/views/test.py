@@ -33,8 +33,12 @@ class AnsibleDeployView(APIView):
             password = data["password"]
             tags = data["tags"]
 
-            return create_zabbix_agent(
+            result = create_zabbix_agent(
                 port, target_host, username, hostname, password, tags
+            )
+            return Response(
+                {"status": "success", "message": "Zabbix agent created successfully", "result": result},
+                status=status.HTTP_201_CREATED,
             )
 
         except ServiceErrorHandler as e:

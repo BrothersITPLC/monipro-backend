@@ -1,5 +1,8 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -75,6 +78,7 @@ class ZabbixAuthToken(models.Model):
     def __str__(self):
         return self.auth
 
+
 # class ZabbixAuthToken(models.Model):
 #     auth = models.CharField(max_length=100, null=True, blank=True)
 #     created_at = models.DateTimeField(auto_now_add=True)
@@ -87,3 +91,52 @@ class ZabbixAuthToken(models.Model):
 
 #     def __str__(self):
 #         return self.auth
+
+
+class TaskStatus(models.Model):
+    """Model to track the status of asynchronous tasks"""
+
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    task_id = models.CharField(max_length=255, unique=True)
+    task_type = models.CharField(max_length=100)
+    parent_task = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    host_ip=models.CharField(max_length=50, null=True, blank=True)
+    dns=models.CharField(max_length=50, null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    successfully_executed_tasks = models.JSONField(null=True, blank=True)
+    unsuccessfully_executed_tasks = models.JSONField(null=True, blank=True)
+    faild_task=models.IntegerField(default=0)
+    successful_task=models.IntegerField(default=0)
+    error_message=models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"{self.task_type} - {self.status} ({self.task_id})"
+
+    def update_status(self, status, successfully_executed_tasks=None, error_message=None,unsuccessfully_executed_tasks=None, faild_task=None, successful_task=None):
+        self.status = status
+        if successfully_executed_tasks:
+            self.successfully_executed_tasks = successfully_executed_tasks
+        if unsuccessfully_executed_tasks:
+            self.unsuccessfully_executed_tasks = unsuccessfully_executed_tasks
+        if faild_task:
+            self.faild_task = faild_task
+        if successful_task:
+            self.successful_task = successful_task
+        if error_message:
+            self.error_message = error_message
+        self.updated_at = timezone.now()
+        self.save()
