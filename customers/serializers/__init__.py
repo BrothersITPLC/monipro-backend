@@ -1,3 +1,2 @@
-from .organization_info import OrganizationInfoSerializer
-from .payment_update import OrganizationPaymentUpdateSerializer
-from .private_info import PrivateInfoViewSerializer
+from customers.serializers.organization_info import OrganizationInfoSerializer
+from customers.serializers.payment_update import OrganizationPaymentUpdateSerializer

@@ -1,87 +1,42 @@
-from typing import Any, cast
-
+# views.py
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.models import ZabbixHostGroup, ZabbixUser, ZabbixUserGroup
+from users.serializers import UserProfileSerializer
 
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-
-        # Base user data
-        user_data = {
-            "user_id": user.id,
-            "user_name": user.name,
-            "user_email": user.email,
-            "is_private": user.is_private,
-            "is_organization": user.role == "is_organization",
-            "organization_info_completed": user.is_organization_completed_information,
-        }
-
-        if (
-            cast(Any, ZabbixHostGroup).objects.filter(created_by=user).exists()
-            and cast(Any, ZabbixUserGroup).objects.filter(created_by=user).exists()
-        ):
-            user_data.update(
+        try:
+            serializer = UserProfileSerializer(request.user)
+            return Response(
                 {
-                    "user_have_zabbix_credentials_1": True,
-                }
+                    "status": "success",
+                     "message": "User profile retrieved successfully",
+                     "user_data": serializer.data
+                },
+                status=status.HTTP_200_OK
             )
 
-            if cast(Any, ZabbixUser).objects.filter(user=user).exists():
-                user_data.update(
-                    {
-                        "user_have_zabbix_user": True,
-                    }
-                )
-            else:
-                user_data.update(
-                    {
-                        "user_have_zabbix_user": False,
-                    }
-                )
-        else:
-            user_data.update(
+        except AttributeError as e:
+            print(f"Error: {e}")
+            return Response(
                 {
-                    "user_have_zabbix_credentials_1": False,
-                }
+                    "status": "error",
+                    "message": "User profile not found",
+                },
+                status=status.HTTP_404_NOT_FOUND
             )
 
-        # Add personal info if not organization
-        if user.role != "is_organization":
-            user_data.update(
+        except Exception as e:
+            return Response(
                 {
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "phone": user.phone,
-                }
+                    "status": "error",
+                    "message": "An unexpected error occurred while retrieving the profile",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # Add organization info if completed
-        if user.is_organization_completed_information and user.organization:
-            org = user.organization
-            user_data.update(
-                {
-                    "organization_id": org.id,
-                    "organization_name": org.organization_name,
-                    "organization_phone": org.organization_phone,
-                    "organization_website": org.organization_website,
-                    "organization_description": org.organization_description,
-                    "organization_payment_plane": org.organization_payment_plane.name
-                    if org.organization_payment_plane
-                    else None,
-                    "organization_payment_duration": org.organization_payment_duration.name
-                    if org.organization_payment_duration
-                    else None,
-                }
-            )
-
-        return Response(
-            {"status": "success", "user_data": user_data}, status=status.HTTP_200_OK
-        )

@@ -15,7 +15,13 @@ class GoogleExchangeView(APIView):
     def post(self, request):
         code = request.data.get("code")
         if not code:
-            return Response({"error": "Authorization code missing"}, status=400)
+            return Response(
+                {
+                    "status":"error",
+                    "message": "Authorization code missing"
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             app = SocialApp.objects.get(provider="google")
@@ -42,7 +48,13 @@ class GoogleExchangeView(APIView):
             token_data = token_response.json()
 
             if "error" in token_data:
-                return Response({"error": token_data["error"]}, status=400)
+                return Response(
+                    {
+                        "status":"error",
+                        "message": "somthing went wrong while autenticating with google please try again",
+                    }, 
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
 
             access_token = token_data.get("access_token")
             user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
@@ -53,7 +65,23 @@ class GoogleExchangeView(APIView):
 
             email = user_info.get("email")
             if not email:
-                return Response({"error": "Email not provided by Google"}, status=400)
+                return Response(
+                    {
+                        "status":"error",
+                        "message": "user information is not provided by Google,please try again",},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            user_data_for_checking = User.objects.filter(email=email).first()
+            if user_data_for_checking and not user_data_for_checking.is_from_social:
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "Email already registered, please try with another Google account.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
 
             # Get name from Google response
             full_name = user_info.get("name", "")
@@ -67,7 +95,9 @@ class GoogleExchangeView(APIView):
                     "first_name": first_name,
                     "last_name": last_name,
                     "is_active": True,
+                    "is_admin": True,
                     "is_verified": True,
+                    "is_from_social": True,
                 },
             )
 
@@ -83,74 +113,11 @@ class GoogleExchangeView(APIView):
             csrf_token = get_token(request)
 
             # Prepare user data similar to login.py
-            if user.role == "is_organization":
-                user_data = {
-                    "user_id": user.id,
-                    "user_name": user.name,
-                    "user_email": user.email,
-                    "is_organization": True,
-                    "is_private": user.is_private
-                    if user.role == "is_organization"
-                    else False,
-                    "organization_info_completed": bool(
-                        user.is_organization_completed_information
-                    ),
-                }
-                if user.is_organization_completed_information and user.organization:
-                    user_data["organization_id"] = user.organization.id
-                    user_data["organization_phone"] = (
-                        user.organization.organization_phone
-                    )
-                    user_data["organization_website"] = (
-                        user.organization.organization_website
-                    )
-                    user_data["organization_description"] = (
-                        user.organization.organization_description
-                    )
-                    user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane.name
-                    )
-                    user_data["organization_payment_duration"] = (
-                        user.organization.organization_payment_duration.name
-                    )
-                    user_data["organization_name"] = user.organization.organization_name
-            else:
-                user_data = {
-                    "user_id": user.id,
-                    "user_name": user.name,
-                    "user_email": user.email,
-                    "is_organization": True
-                    if user.role == "is_organization"
-                    else False,
-                    "organization_info_completed": user.is_organization_completed_information,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "phone": user.phone,
-                }
-                if user.is_organization_completed_information and user.organization:
-                    user_data["organization_id"] = user.organization.id
-                    user_data["organization_phone"] = (
-                        user.organization.organization_phone
-                    )
-                    user_data["organization_website"] = (
-                        user.organization.organization_website
-                    )
-                    user_data["organization_description"] = (
-                        user.organization.organization_description
-                    )
-                    user_data["organization_payment_plane"] = (
-                        user.organization.organization_payment_plane.name
-                    )
-                    user_data["organization_payment_duration"] = (
-                        user.organization.organization_payment_duration.name
-                    )
-                    user_data["organization_name"] = user.organization.organization_name
 
             response = Response(
                 {
                     "status": "success",
                     "message": f"Google {action} successful",
-                    "user_data": user_data,
                     "csrf_token": csrf_token,
                 },
                 status=status.HTTP_200_OK,
@@ -189,9 +156,6 @@ class GoogleExchangeView(APIView):
 
         except Exception as e:
             return Response(
-                {
-                    "status": "error",
-                    "message": f"Error {str(e)}",
-                },
+                {"status": "error", "message": "Something went wrong. Please try again later."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

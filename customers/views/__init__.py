@@ -1,3 +1,2 @@
-from .organization_info import OrganizationInfoView
-from .payment_update import OrganizationPaymentUpdateView
-from .private_info import PrivateInfoView
+from customers.views.organization_info import OrganizationInfoCreateView
+from customers.views.payment_update import OrganizationPaymentUpdateView

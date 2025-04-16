@@ -6,18 +6,18 @@ from subscription.models import Duration, PaymentPlan, PaymentProvider
 
 
 class OrganizationInfo(models.Model):
-    organization_name = models.CharField(max_length=255, unique=True)
-    organization_phone = models.CharField(max_length=15)
+    organization_name = models.CharField(max_length=255)
+    organization_phone = models.CharField(max_length=15, unique=True)
     organization_website = models.URLField(blank=True, null=True)
     organization_description = models.TextField(blank=True, null=True)
     payment_provider = models.ForeignKey(
         PaymentProvider, on_delete=models.PROTECT, blank=True, null=True
     )
-    organization_payment_plane = models.ForeignKey(
-        PaymentPlan, on_delete=models.SET_NULL, null=True, blank=True
+    organization_payment_plan = models.ForeignKey(
+        PaymentPlan, on_delete=models.PROTECT, null=True, blank=True
     )
     organization_payment_duration = models.ForeignKey(
-        Duration, on_delete=models.SET_NULL, null=True, blank=True
+        Duration, on_delete=models.PROTECT, null=True, blank=True
     )
     payment_start_date = models.DateField(default=timezone.now)
     payment_end_date = models.DateField(null=True, blank=True)
