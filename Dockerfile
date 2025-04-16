@@ -33,4 +33,4 @@ ENV DJANGO_SETTINGS_MODULE=monipro.settings
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["bash", "-c", "python manage.py runserver 0.0.0.0:8000 & celery -A monipro worker -l info"]
