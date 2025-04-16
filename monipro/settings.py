@@ -287,8 +287,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True
-REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
-# REDIRECT_URL = "https://monipro.brothersit.dev/api/auth/google/callback"
+# REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
+REDIRECT_URL = "https://monipro.brothersit.dev/auth/google/callback"
 
 
 LOGGING = {
