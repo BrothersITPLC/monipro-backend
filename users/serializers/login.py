@@ -22,13 +22,12 @@ class LoginSerializer(serializers.Serializer):
         )
         if not user:
             raise ServiceErrorHandler(
-                    "Email or password doesn't match. Please try again."
-                )
+                "Email or password doesn't match. Please try again."
+            )
 
         if not user.is_verified:
-            raise ServiceErrorHandler ("Account not verified.")
-            
-    
+            raise ServiceErrorHandler("Account not verified.")
+
         # Return the user object instead of just the attributes
         attrs["user"] = user
         return attrs

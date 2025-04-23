@@ -64,3 +64,4 @@ volumes:
   postgres_primary_db:
 networks:
   moni-pro-net:
+    external: true

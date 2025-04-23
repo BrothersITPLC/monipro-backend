@@ -12,14 +12,16 @@ class UserProfileView(APIView):
 
     def get(self, request):
         try:
-            serializer = UserProfileSerializer(request.user)
+            serializer = UserProfileSerializer(
+                request.user, context={"request": request}
+            )
             return Response(
                 {
                     "status": "success",
-                     "message": "User profile retrieved successfully",
-                     "user_data": serializer.data
+                    "message": "User profile retrieved successfully",
+                    "user_data": serializer.data,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
         except AttributeError as e:
@@ -29,7 +31,7 @@ class UserProfileView(APIView):
                     "status": "error",
                     "message": "User profile not found",
                 },
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         except Exception as e:
@@ -38,5 +40,5 @@ class UserProfileView(APIView):
                     "status": "error",
                     "message": "An unexpected error occurred while retrieving the profile",
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
