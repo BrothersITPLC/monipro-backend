@@ -10,8 +10,7 @@ from rest_framework.views import APIView
 
 from users.models import OTP, RegistrationAttempt, User, generate_unique_otp
 from users.serializers import InitialRegistrationSerializer
-from utils import ServiceErrorHandler
-from utils.otp_send_email import send_otp_via_email
+from utils import ServiceErrorHandler, send_otp_via_email
 
 django_logger = logging.getLogger("django")
 

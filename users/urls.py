@@ -1,14 +1,17 @@
 from django.urls import path
 
 from .views import (
+    AddUserView,
     ChangePasswordView,
     ForgotPasswordView,
+    GetTeamUsersView,
     GoogleExchangeView,
     InitialRegistrationView,
     Login,
     Logout,
     PasswordResetView,
     ProfilePictureUpdateView,
+    SetUserActiveAPIView,
     TeamUserByOrganizationView,
     TeamUserView,
     UpdateProfileView,
@@ -42,4 +45,7 @@ urlpatterns = [
     ),
     path("change-password/", ChangePasswordView.as_view(), name="change-password"),
     path("update-profile/", UpdateProfileView.as_view(), name="update-profile"),
+    path("add-team-user/", AddUserView.as_view(), name="add-team-user"),
+    path("get-team-users/", GetTeamUsersView.as_view(), name="get-team-users"),
+    path("set-active/", SetUserActiveAPIView.as_view(), name="set-user-active"),
 ]

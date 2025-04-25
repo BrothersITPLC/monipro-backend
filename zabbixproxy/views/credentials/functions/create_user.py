@@ -85,7 +85,9 @@ def create_user(
             result = response.json()
             # Success case
             userid = result["result"]["userids"][0]
-            zabbix_logger.info(f"User '{username}' created successfully with ID: {userid}")
+            zabbix_logger.info(
+                f"User '{username}' created successfully with ID: {userid}"
+            )
             return userid
 
         except requests.RequestException as e:
@@ -106,7 +108,9 @@ def create_user(
                     "Authentication error during user creation, token may be invalid"
                 )
                 raise
-            zabbix_logger.error(f"Zabbix service error (attempt {attempt + 1}): {str(e)}")
+            zabbix_logger.error(
+                f"Zabbix service error (attempt {attempt + 1}): {str(e)}"
+            )
         except Exception as e:
             zabbix_logger.error(
                 f"Unexpected error during user creation (attempt {attempt + 1}): {str(e)}"

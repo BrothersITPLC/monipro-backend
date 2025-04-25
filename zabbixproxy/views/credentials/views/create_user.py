@@ -90,7 +90,7 @@ class ZabbixUserCreationView(APIView):
                     user_group=user_group,
                     username=zabbix_username,
                     password=self.default_password,
-                    roleid=str(roleid),  # Convert to string to match model field
+                    roleid=roleid,
                 )
 
             # Return success response

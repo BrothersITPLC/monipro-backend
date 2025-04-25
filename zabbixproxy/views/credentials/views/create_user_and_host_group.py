@@ -100,6 +100,7 @@ class HostAndUserGroupCreationView(APIView):
                         created_by=user,
                         name=zabbix_host_group_name,
                         hostgroupid=host_groupid,
+                        belongs_to=user.organization,
                     )
 
                 # Step 2: Create or get user group
@@ -131,9 +132,11 @@ class HostAndUserGroupCreationView(APIView):
                     "status": "success",
                     "message": "Zabbix resources created successfully",
                 },
-                status=status.HTTP_201_CREATED
-                if not (existing_host_group and existing_user_group)
-                else status.HTTP_200_OK,
+                status=(
+                    status.HTTP_201_CREATED
+                    if not (existing_host_group and existing_user_group)
+                    else status.HTTP_200_OK
+                ),
             )
 
         except ServiceErrorHandler as e:

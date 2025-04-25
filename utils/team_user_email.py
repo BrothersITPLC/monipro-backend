@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
 
 
-def send_team_user_creation_email(email, name, organization_name, default_password):
+def send_team_user_creation_email(email, name, organization_name, password):
     try:
         subject = "Your Team Account Has Been Created"
         logo_url = getattr(settings, "COMPANY_LOGO_URL", "https://example.com/logo.png")
@@ -40,7 +40,7 @@ def send_team_user_creation_email(email, name, organization_name, default_passwo
                             <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin: 20px 0;">
                                 <p style="font-size: 16px; color: #555555; line-height: 1.5;">Your temporary login credentials:</p>
                                 <p style="font-size: 16px; color: #555555; line-height: 1.5;">Email: {email}</p>
-                                <p style="font-size: 16px; color: #555555; line-height: 1.5;">Password: {default_password}</p>
+                                <p style="font-size: 16px; color: #555555; line-height: 1.5;">Password: {password}</p>
                                 <p style="font-size: 16px; color: #555555; text-align:center; margin-top: 20px;">
                                     <a href="{login_url}" style="color: #007bff; text-decoration: none; font-weight: bold;">Click here to login</a>
                                 </p>

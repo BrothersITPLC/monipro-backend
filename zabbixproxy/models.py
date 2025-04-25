@@ -4,11 +4,16 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
+from customers.models import OrganizationInfo
+
 User = get_user_model()
 
 
 class ZabbixHostGroup(models.Model):
     hostgroupid = models.CharField(max_length=50, null=True, blank=True)
+    belongs_to = models.ForeignKey(
+        OrganizationInfo, on_delete=models.CASCADE, null=True, blank=True
+    )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
 
@@ -42,7 +47,7 @@ class ZabbixUser(models.Model):
     user_group = models.ForeignKey(ZabbixUserGroup, on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
-    roleid = models.CharField(max_length=50, choices=PERMISSION_CHOICES)
+    roleid = models.IntegerField(choices=PERMISSION_CHOICES)
 
     def __str__(self):
         return f"{self.username}-{self.userid}"
@@ -109,24 +114,31 @@ class TaskStatus(models.Model):
     parent_task = models.ForeignKey(
         "self", on_delete=models.SET_NULL, null=True, blank=True
     )
-    host_ip=models.CharField(max_length=50, null=True, blank=True)
-    dns=models.CharField(max_length=50, null=True, blank=True)
+    host_ip = models.CharField(max_length=50, null=True, blank=True)
+    dns = models.CharField(max_length=50, null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     successfully_executed_tasks = models.JSONField(null=True, blank=True)
     unsuccessfully_executed_tasks = models.JSONField(null=True, blank=True)
-    faild_task=models.IntegerField(default=0)
-    successful_task=models.IntegerField(default=0)
-    error_message=models.TextField(null=True, blank=True)
+    faild_task = models.IntegerField(default=0)
+    successful_task = models.IntegerField(default=0)
+    error_message = models.TextField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
     def __str__(self):
         return f"{self.task_type} - {self.status} ({self.task_id})"
 
-    def update_status(self, status, successfully_executed_tasks=None, error_message=None,unsuccessfully_executed_tasks=None, faild_task=None, successful_task=None):
+    def update_status(
+        self,
+        status,
+        successfully_executed_tasks=None,
+        error_message=None,
+        unsuccessfully_executed_tasks=None,
+        faild_task=None,
+        successful_task=None,
+    ):
         self.status = status
         if successfully_executed_tasks:
             self.successfully_executed_tasks = successfully_executed_tasks
