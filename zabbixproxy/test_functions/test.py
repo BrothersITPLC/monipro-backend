@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
-from zabbixproxy.ansibal.functions import create_zabbix_agent
-from zabbixproxy.ansibal.serializers import AnsibleRequestSerializer
+from zabbixproxy.automation_functions import create_zabbix_agent
+from zabbixproxy.serializers import AnsibleRequestSerializer
 
 
 class AnsibleDeployView(APIView):

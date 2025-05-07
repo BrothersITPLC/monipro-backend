@@ -288,7 +288,7 @@ SOCIALACCOUNT_PROVIDERS = {
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
-# REDIRECT_URL = "https://monipro.brothersit.dev/api/auth/google/callback"
+# REDIRECT_URL = "https://monipro.brothersit.dev/social/auth/google/callback"
 
 
 LOGGING = {
@@ -340,12 +340,9 @@ LOGGING = {
 }
 
 CRONJOBS = [("0 0 * * *", "jobs.functions.DeleteOldTokensCronJob")]
-PLAYBOOK_PATH = os.path.join(
-    BASE_DIR, "zabbixproxy", "ansibal", "playbooks", "playbook.yml"
-)
 
 ZABBIX_PLAYBOOK_PATH = os.path.join(
-    BASE_DIR, "zabbixproxy", "ansibal", "playbooks", "zabbix-playbook.yml"
+    BASE_DIR, "zabbixproxy", "automation_functions", "ansibal_playbooks", "zabbix-playbook.yml"
 )
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "monipro.settings")

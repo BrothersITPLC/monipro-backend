@@ -15,7 +15,8 @@ RUN apt-get update && \
 
 # Install Ansible and required collections
 RUN pip install ansible && \
-    ansible-galaxy collection install community.docker
+    ansible-galaxy collection install community.docker && \
+    ansible-galaxy collection install community.zabbix
 
 # Install Python dependencies
 COPY requirements.txt .

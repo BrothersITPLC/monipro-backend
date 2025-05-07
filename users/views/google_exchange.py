@@ -1,4 +1,6 @@
 # google_exchange.py
+import logging
+
 import requests
 from allauth.socialaccount.models import SocialApp
 from django.conf import settings
@@ -9,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
+django_logger = logging.getLogger("django")
 
 
 class GoogleExchangeView(APIView):
@@ -16,11 +19,8 @@ class GoogleExchangeView(APIView):
         code = request.data.get("code")
         if not code:
             return Response(
-                {
-                    "status":"error",
-                    "message": "Authorization code missing"
-                }, 
-                status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Authorization code missing"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -47,14 +47,16 @@ class GoogleExchangeView(APIView):
             token_response = requests.post(token_url, data=token_payload)
             token_data = token_response.json()
 
+            django_logger.info(f"Token response: {token_data}")
+
             if "error" in token_data:
                 return Response(
                     {
-                        "status":"error",
+                        "status": "error",
                         "message": "somthing went wrong while autenticating with google please try again",
-                    }, 
-                    status=status.HTTP_400_BAD_REQUEST
-                ) 
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             access_token = token_data.get("access_token")
             user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
@@ -67,11 +69,12 @@ class GoogleExchangeView(APIView):
             if not email:
                 return Response(
                     {
-                        "status":"error",
-                        "message": "user information is not provided by Google,please try again",},
+                        "status": "error",
+                        "message": "user information is not provided by Google,please try again",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
             user_data_for_checking = User.objects.filter(email=email).first()
             if user_data_for_checking and not user_data_for_checking.is_from_social:
                 return Response(
@@ -81,7 +84,6 @@ class GoogleExchangeView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
 
             # Get name from Google response
             full_name = user_info.get("name", "")
@@ -155,7 +157,12 @@ class GoogleExchangeView(APIView):
             return response
 
         except Exception as e:
+            django_logger.error(f"Error during Google token exchange: {e}")
+            print(e)
             return Response(
-                {"status": "error", "message": "Something went wrong. Please try again later."},
+                {
+                    "status": "error",
+                    "message": "Something went wrong. Please try again later.",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

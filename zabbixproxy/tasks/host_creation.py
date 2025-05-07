@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional, cast
 from celery import shared_task
 
 from utils import ServiceErrorHandler
+from zabbixproxy.host_functions import create_host
 from zabbixproxy.models import TaskStatus
-from zabbixproxy.views.host_items.functions import create_host
 
 django_logger = logging.getLogger("django")
 
@@ -37,7 +37,9 @@ def create_zabbix_host_task(
     username = params.get("username")
     password = params.get("password")
     network_type = params.get("network_type")
-    django_logger.info(f"Creating host with parameters: hostgroup={hostgroup}, hostid={ip}, host={host}")
+    django_logger.info(
+        f"Creating host with parameters: hostgroup={hostgroup}, hostid={ip}, host={host}"
+    )
 
     task_status = None
     if task_id:
@@ -79,8 +81,8 @@ def create_zabbix_host_task(
                 "username": username,
                 "password": password,
                 "network_type": network_type,
-                "message": f"Successfully created Zabbix host '{host}' with ID: {hostid}"
-            }
+                "message": f"Successfully created Zabbix host '{host}' with ID: {hostid}",
+            },
         }
 
     except ServiceErrorHandler as e:

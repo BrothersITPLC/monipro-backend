@@ -1,0 +1,5 @@
+from zabbixproxy.views.ancibal_runner import AnsibleDeployView
+from zabbixproxy.views.create_host import ZabbixHostCreationView
+from zabbixproxy.views.create_user import ZabbixUserCreationView
+from zabbixproxy.views.create_user_and_host_group import HostAndUserGroupCreationView
+from zabbixproxy.views.get_hosts import GetZabbixHostes

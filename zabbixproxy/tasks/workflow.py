@@ -17,6 +17,7 @@ ansibal_logger = logging.getLogger("ansible")
 
 User = get_user_model()
 
+
 @shared_task(bind=True)
 def create_host_workflow(
     self,
@@ -76,7 +77,7 @@ def create_host_workflow(
         )
 
         def on_transaction_commit():
-        
+
             chain(
                 deploy_zabbix_agent_task.s(
                     port=port,
@@ -86,7 +87,7 @@ def create_host_workflow(
                     password=password,
                     tags=tags,
                     task_id=str(parent_task.task_id),
-                    next_task_params={ 
+                    next_task_params={
                         "api_url": api_url,
                         "auth_token": auth_token,
                         "hostgroup": hostgroup,
@@ -102,11 +103,11 @@ def create_host_workflow(
                         "password": password,
                         "network_type": network_type,
                         "record_task_id": record_task_id,
-                        "task_id": host_task_id 
-                    }
+                        "task_id": host_task_id,
+                    },
                 ),
-                create_zabbix_host_task.s(),  
-                create_zabbix_host_record_task.s()
+                create_zabbix_host_task.s(),
+                create_zabbix_host_record_task.s(),
             ).apply_async()
 
         transaction.on_commit(on_transaction_commit)
@@ -114,7 +115,7 @@ def create_host_workflow(
         return {
             "status": "success",
             "message": "Host creation workflow started",
-            "task_id": agent_task_id
+            "task_id": agent_task_id,
         }
 
     except Exception as e:

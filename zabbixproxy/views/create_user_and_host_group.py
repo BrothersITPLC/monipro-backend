@@ -8,12 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
-from zabbixproxy.models import ZabbixAuthToken, ZabbixHostGroup, ZabbixUserGroup
-from zabbixproxy.views.credentials.functions import (
+from zabbixproxy.credentials_functions import (
     create_host_group,
     create_user_group,
     zabbix_login,
 )
+from zabbixproxy.models import ZabbixAuthToken, ZabbixHostGroup, ZabbixUserGroup
 
 
 class HostAndUserGroupCreationView(APIView):

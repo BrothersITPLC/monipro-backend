@@ -1,2 +1,3 @@
+from zabbixproxy.serializers.ansibal_runner import AnsibleRequestSerializer
 from zabbixproxy.serializers.host_list import ZabbixHostSerializer
 from zabbixproxy.serializers.zabbix_user import ZabbixUserSerializer

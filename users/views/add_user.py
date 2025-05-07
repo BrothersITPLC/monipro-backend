@@ -9,9 +9,9 @@ from rest_framework.views import APIView
 
 from users.serializers import AddUserSerializer
 from utils import ServiceErrorHandler, generate_password, send_team_user_creation_email
+from zabbixproxy.credentials_functions import create_user, zabbix_login
 from zabbixproxy.models import ZabbixAuthToken, ZabbixUserGroup
 from zabbixproxy.serializers import ZabbixUserSerializer
-from zabbixproxy.views.credentials.functions import create_user, zabbix_login
 
 django_logger = logging.getLogger("django")
 zabbix_logger = logging.getLogger("zabbix")

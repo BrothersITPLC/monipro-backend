@@ -1,4 +1,3 @@
-# ansibal/views/ansibal_runner.py
 import logging
 import os
 import tempfile
@@ -11,7 +10,7 @@ from rest_framework.views import APIView
 
 ansible_logger = logging.getLogger("ansibal")
 from utils import ServiceErrorHandler
-from zabbixproxy.ansibal.serializers import AnsibleRequestSerializer
+from zabbixproxy.serializers import AnsibleRequestSerializer
 
 
 class AnsibleDeployView(APIView):

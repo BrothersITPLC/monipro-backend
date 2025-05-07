@@ -5,11 +5,12 @@ import requests
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET
 
 from utils import ServiceErrorHandler
+from zabbixproxy.credentials_functions import zabbix_login
+from zabbixproxy.host_items_functions import get_real_time_data
 from zabbixproxy.models import ZabbixAuthToken
-from zabbixproxy.views.credentials.functions import zabbix_login
 
 api_url = settings.ZABBIX_API_URL
 username = settings.ZABBIX_ADMIN_USER
@@ -18,26 +19,27 @@ password = settings.ZABBIX_ADMIN_PASSWORD
 zabbix_logger = logging.getLogger("zabbix")
 django_logger = logging.getLogger("django")
 
+
 def get_zabbix_auth_token(self):
-        try:
-            return zabbix_login(
-                api_url=self.api_url, username=self.username, password=self.password
-            )
-        except ServiceErrorHandler as e:
-            raise ServiceErrorHandler(
-                f"{str(e)}"
-            )
+    try:
+        return zabbix_login(
+            api_url=self.api_url, username=self.username, password=self.password
+        )
+    except ServiceErrorHandler as e:
+        raise ServiceErrorHandler(f"{str(e)}")
+
+
 @csrf_exempt
-@require_POST
+@require_GET  # Changed from require_POST to require_GET
 def get_host_items(request):
     """
     Proxy endpoint to get host items from Zabbix API.
-    Frontend only needs to send the hostids.
+    Frontend only needs to send the hostids and name as query parameters.
     """
     try:
-        # Parse request data
-        data = json.loads(request.body)
-        hostids = data.get("hostids")
+        # Get parameters from query string
+        hostids = request.GET.get("hostids")
+        name = request.GET.get("name", "CPU")  # Default to "CPU" if not provided
 
         if not hostids:
             return JsonResponse({"error": "Missing hostids parameter"}, status=400)
@@ -45,19 +47,17 @@ def get_host_items(request):
         # Get auth token using the zabbix_login function
         auth_token = ZabbixAuthToken.objects.first()
         if not auth_token:
-                auth_token = ZabbixAuthToken.get_or_create_token(
-                    get_zabbix_auth_token()
-                )
+            auth_token = ZabbixAuthToken.get_or_create_token(get_zabbix_auth_token())
 
         # Prepare the request to Zabbix API
         zabbix_request = {
             "jsonrpc": "2.0",
             "method": "item.get",
             "params": {
-                "output": ["itemid", "name", "key_"],
+                "output": ["itemid", "name", "key_", "value_type", "units"],
                 "hostids": hostids,
                 "search": {
-                    "name": "CPU",
+                    "name": name,
                 },
                 "sortfield": "name",
             },
@@ -92,32 +92,60 @@ def get_host_items(request):
             )
 
             return JsonResponse(
-                 {
-                        "status":"error",
-                        "message":f"{error_message} - {error_data}",
-                 },
+                {
+                    "status": "error",
+                    "message": f"{error_message} - {error_data}",
+                },
                 status=502,
             )
 
         # Parse the response
         result = response.json()
         # Return the result directly
-        return JsonResponse(result)
+        compiled_response = {
+            "status": "success",
+            "data": [],
+        }
+
+        try:
+            for item in result["result"]:
+                item_content_result_data = []
+                item_content_result = get_real_time_data(
+                    itemids=item["itemid"],
+                    value_type=item["value_type"],
+                    hostids=hostids,
+                )
+                if item_content_result.get("result"):
+                    item_content_result_data = item_content_result["result"]
+                    compiled_response["data"].append(
+                        {
+                            "itemid": item["itemid"],
+                            "name": item["name"],
+                            "value_type": item["value_type"],
+                            "units": item["units"],
+                            "result": item_content_result_data,
+                        }
+                    )
+
+        except Exception as e:
+            django_logger.exception(f"Error processing item: {str(e)}")
+
+        return JsonResponse(compiled_response)
 
     except json.JSONDecodeError:
-            return JsonResponse(
-                 {
-                        "status":"error",
-                        "message":"Invalid JSON in request body",
-                 },
-                status=400,
-            )
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "Invalid JSON in request body",
+            },
+            status=400,
+        )
     except Exception as e:
         django_logger.exception(f"Unexpected error in get_real_time_data: {str(e)}")
         return JsonResponse(
-                 {
-                        "status":"error",
-                        "message":"Unexpected error occurred",
-                 },
-                status=500,
-            )
+            {
+                "status": "error",
+                "message": "Unexpected error occurred",
+            },
+            status=500,
+        )

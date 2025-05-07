@@ -8,15 +8,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
+from zabbixproxy.credentials_functions import zabbix_login
 
 # Import the create_zabbix_agent function
 from zabbixproxy.models import ZabbixAuthToken, ZabbixHost, ZabbixHostGroup
 
 # Update imports
-from zabbixproxy.tasks import (
-    create_host_workflow,
-)
-from zabbixproxy.views.credentials.functions import zabbix_login
+from zabbixproxy.tasks import create_host_workflow
 
 django_logger = logging.getLogger("django")
 
