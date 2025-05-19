@@ -1,0 +1,4 @@
+from zabbixproxy.alert_functions.get_alert import get_zabbix_alerts
+from zabbixproxy.alert_functions.get_single_alert import get_single_alerts
+
+

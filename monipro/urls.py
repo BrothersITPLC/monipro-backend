@@ -29,6 +29,7 @@ urlpatterns = [
     path("api/", include("subscription.urls")),
     path("api/", include("customers.urls")),
     path("api/", include("zabbixproxy.urls")),
+    path("api/", include("agents.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

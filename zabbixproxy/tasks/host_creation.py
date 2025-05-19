@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 from celery import shared_task
 
@@ -29,14 +29,12 @@ def create_zabbix_host_task(
     port = params.get("port")
     dns = params.get("dns")
     useip = params.get("useip")
-    host_template = params.get("host_template")
     task_id = params.get("task_id")
     record_task_id = params.get("record_task_id")
     device_type = params.get("device_type")
     network_device_type = params.get("network_device_type")
     username = params.get("username")
     password = params.get("password")
-    network_type = params.get("network_type")
     django_logger.info(
         f"Creating host with parameters: hostgroup={hostgroup}, hostid={ip}, host={host}"
     )
@@ -59,7 +57,6 @@ def create_zabbix_host_task(
             port=port,
             dns=dns,
             useip=useip,
-            host_template=host_template,
         )
 
         if task_status:
@@ -75,12 +72,10 @@ def create_zabbix_host_task(
                 "ip": ip,
                 "port": port,
                 "dns": dns,
-                "host_template": host_template,
                 "device_type": device_type,
                 "network_device_type": network_device_type,
                 "username": username,
                 "password": password,
-                "network_type": network_type,
                 "message": f"Successfully created Zabbix host '{host}' with ID: {hostid}",
             },
         }

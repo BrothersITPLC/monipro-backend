@@ -1,0 +1,1 @@
+from agents.agent.insight_agent import build_insight_agent

@@ -1,0 +1,1 @@
+from agents.views.alert_insight import AlertInsightAPIView

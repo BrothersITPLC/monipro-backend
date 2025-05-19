@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     "subscription",
     "zabbixproxy",
     "jobs",
+    "agents",
     # therd party apps
     "corsheaders",
     "rest_framework",
@@ -342,7 +343,11 @@ LOGGING = {
 CRONJOBS = [("0 0 * * *", "jobs.functions.DeleteOldTokensCronJob")]
 
 ZABBIX_PLAYBOOK_PATH = os.path.join(
-    BASE_DIR, "zabbixproxy", "automation_functions", "ansibal_playbooks", "zabbix-playbook.yml"
+    BASE_DIR,
+    "zabbixproxy",
+    "automation_functions",
+    "ansibal_playbooks",
+    "zabbix-playbook.yml",
 )
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "monipro.settings")

@@ -12,7 +12,11 @@ User = get_user_model()
 class ZabbixHostGroup(models.Model):
     hostgroupid = models.CharField(max_length=50, null=True, blank=True)
     belongs_to = models.ForeignKey(
-        OrganizationInfo, on_delete=models.CASCADE, null=True, blank=True
+        OrganizationInfo,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="organization_hostgroup",
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
@@ -60,12 +64,10 @@ class ZabbixHost(models.Model):
     ip = models.CharField(max_length=50, null=True, blank=True, unique=True)
     dns = models.CharField(max_length=50, null=True, blank=True, default="")
     port = models.IntegerField(default=10050)
-    host_template = models.IntegerField(default=10001)
     device_type = models.CharField(max_length=50, null=True, blank=True)
     network_device_type = models.CharField(max_length=50, null=True, blank=True)
     username = models.CharField(max_length=50, null=True, blank=True)
     password = models.CharField(max_length=50, null=True, blank=True)
-    network_type = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return f"{self.host}-{self.hostid}"
@@ -152,3 +154,77 @@ class TaskStatus(models.Model):
             self.error_message = error_message
         self.updated_at = timezone.now()
         self.save()
+
+
+class HostForReachabilityMonitoring(models.Model):
+    host = models.ForeignKey(ZabbixHost, on_delete=models.CASCADE)
+    host_ip = models.CharField(max_length=50, null=True, blank=True)
+    dns = models.CharField(max_length=50, null=True, blank=True)
+    hostgroup = models.ForeignKey(ZabbixHostGroup, on_delete=models.CASCADE)
+    hostid = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.host}-{self.hostid}"
+
+
+class MonitoringType(models.TextChoices):
+    SIMPLE_CHECKS = (
+        "simple_checks",
+        "Simple Checks – Basic Network and Service Availability Checks",
+    )
+    AGENT = "agent", "Agent – Advanced Agent-Based Monitoring (Zabbix Agent2)"
+    SNMP = (
+        "snmp",
+        "SNMP – Network Device Monitoring via SNMP (Simple Network Management Protocol)",
+    )
+    IPMI = (
+        "ipmi",
+        "IPMI – Hardware-Level Monitoring via IPMI (Intelligent Platform Management Interface)",
+    )
+    APPLICATION_LEVEL = (
+        "application_level",
+        "Application Level – Application-Specific Monitoring (e.g., Databases, Web Apps, Services)",
+    )
+
+
+class zabbbixTemplate(models.Model):
+    templateid = models.CharField(max_length=50, null=True, blank=True)
+    template_name = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    monitoring_type = models.CharField(
+        max_length=32,
+        choices=MonitoringType.choices,
+        default=MonitoringType.SIMPLE_CHECKS,
+    )
+
+    def __str__(self):
+        return f"{self.template_name}-{self.templateid}"
+
+
+class Host(models.Model):
+    DEVICE_TYPE_CHOICES = (
+        ("vm", "vm"),
+        ("network", "network"),
+    )
+    NETWORK_DEVICE_TYPE = (
+        ("switch", "switch"),
+        ("router", "router"),
+        ("firewall", "firewall"),
+        ("load_balancer", "load_balancer"),
+    )
+    host = models.CharField(max_length=255)
+    ip = models.CharField(max_length=100, null=True, blank=True)
+    dns = models.CharField(max_length=100, null=True, blank=True)
+    host_group = models.ForeignKey(
+        ZabbixHostGroup, on_delete=models.CASCADE, null=True, blank=True
+    )
+    device_type = models.CharField(
+        max_length=50, choices=DEVICE_TYPE_CHOICES, default="vm"
+    )
+    network_device_type = models.CharField(
+        max_length=50, choices=NETWORK_DEVICE_TYPE, null=True, blank=True
+    )
+
+    def __str__(self):
+        return f"{self.host_name}-{self.host_ip}"

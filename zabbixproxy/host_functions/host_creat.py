@@ -16,7 +16,6 @@ def create_host(
     port,
     dns,
     useip,
-    host_template,
     max_retries=3,
     retry_delay=2,
 ):
@@ -31,7 +30,6 @@ def create_host(
         ip: IP address of the host
         port: Port number for the host
         dns: DNS name for the host
-        host_template: Template ID to assign to the host
         max_retries: Maximum number of retry attempts
         retry_delay: Delay between retries in seconds
 
@@ -69,7 +67,6 @@ def create_host(
                             }
                         ],
                         "groups": [{"groupid": hostgroup}],
-                        "templates": [{"templateid": host_template}],
                     },
                     "id": 1,
                 },

@@ -18,6 +18,7 @@ class GoogleExchangeView(APIView):
     def post(self, request):
         code = request.data.get("code")
         if not code:
+            django_logger.error("Authorization code is missing in the request.")
             return Response(
                 {"status": "error", "message": "Authorization code missing"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -50,6 +51,7 @@ class GoogleExchangeView(APIView):
             django_logger.info(f"Token response: {token_data}")
 
             if "error" in token_data:
+                django_logger.error(f"Error in token response: {token_data['error']}")
                 return Response(
                     {
                         "status": "error",
