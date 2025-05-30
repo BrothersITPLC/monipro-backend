@@ -1,6 +1,6 @@
 amqp==5.3.1
 annotated-types==0.7.0
-ansible-core==2.18.4
+ansible==11.6.0
 ansible-runner==2.4.1
 anyio==4.8.0
 asgiref==3.8.1
@@ -71,6 +71,7 @@ python-daemon==3.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python3-openid==3.2.0
+pythonping==1.1.4
 pytz==2025.1
 PyYAML==6.0.2
 redis==5.2.1

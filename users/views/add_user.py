@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from users.serializers import AddUserSerializer
 from utils import ServiceErrorHandler, generate_password, send_team_user_creation_email
 from zabbixproxy.credentials_functions import create_user, zabbix_login
-from zabbixproxy.models import ZabbixAuthToken, ZabbixUserGroup
+from zabbixproxy.models import ZabbixUserGroup
 from zabbixproxy.serializers import ZabbixUserSerializer
 
 django_logger = logging.getLogger("django")
@@ -88,11 +88,7 @@ class AddUserView(APIView):
             organization_name = organization.organization_name
 
             with transaction.atomic():
-                auth_token = ZabbixAuthToken.objects.first()
-                if not auth_token:
-                    auth_token = ZabbixAuthToken.get_or_create_token(
-                        self.get_zabbix_auth_token()
-                    )
+                auth_token = self.get_zabbix_auth_token()
 
                 # 1. Create user in Zabbix
                 userid = create_user(

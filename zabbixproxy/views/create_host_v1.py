@@ -11,7 +11,7 @@ from utils import ServiceErrorHandler
 from zabbixproxy.credentials_functions import zabbix_login
 
 # Import the create_zabbix_agent function
-from zabbixproxy.models import ZabbixAuthToken, ZabbixHost, ZabbixHostGroup
+from zabbixproxy.models import ZabbixHost, ZabbixHostGroup
 
 # Update imports
 from zabbixproxy.tasks import create_host_workflow
@@ -134,11 +134,7 @@ class ZabbixHostCreationView(APIView):
 
         # In the post method, replace the task creation code with:
         try:
-            auth_token = cast(Any, ZabbixAuthToken).objects.first()
-            if not auth_token:
-                auth_token = ZabbixAuthToken.get_or_create_token(
-                    self.get_zabbix_auth_token()
-                )
+            auth_token = self.get_zabbix_auth_token()
 
             # Start the workflow task
             workflow_task = create_host_workflow.delay(

@@ -1,0 +1,27 @@
+[
+    {
+      "model": "item_types.simplecheckitemtypes",
+      "pk": 1,
+      "fields": {
+        "name": "ICMP (Ping) Checks",
+        "description": "Checks if a device is online and how fast it responds using basic ping tests."
+      }
+    },
+    {
+      "model": "item_types.simplecheckitemtypes",
+      "pk": 2,
+      "fields": {
+        "name": "TCP Service Checks",
+        "description": "Checks if services like HTTP, SSH, or MySQL are reachable and responding over the network."
+      }
+    },
+    {
+      "model": "item_types.simplecheckitemtypes",
+      "pk": 3,
+      "fields": {
+        "name": "UDP Service Checks",
+        "description": "Checks if services like NTP or DNS are available and accepting data over the network."
+      }
+    }
+  ]
+  

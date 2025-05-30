@@ -13,7 +13,7 @@ from zabbixproxy.credentials_functions import (
     create_user_group,
     zabbix_login,
 )
-from zabbixproxy.models import ZabbixAuthToken, ZabbixHostGroup, ZabbixUserGroup
+from zabbixproxy.models import ZabbixHostGroup, ZabbixUserGroup
 
 
 class HostAndUserGroupCreationView(APIView):
@@ -73,13 +73,8 @@ class HostAndUserGroupCreationView(APIView):
                 status=status.HTTP_200_OK,
             )
         try:
-            # Get auth token
-            auth_token = ZabbixAuthToken.objects.first()
-            if not auth_token:
-                auth_token = ZabbixAuthToken.get_or_create_token(
-                    self.get_zabbix_auth_token()
-                )
 
+            auth_token = self.get_zabbix_auth_token()
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())
 

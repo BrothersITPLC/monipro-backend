@@ -213,7 +213,7 @@ class Host(models.Model):
         ("firewall", "firewall"),
         ("load_balancer", "load_balancer"),
     )
-    host = models.CharField(max_length=255)
+    host = models.CharField(max_length=255, unique=True)
     ip = models.CharField(max_length=100, null=True, blank=True)
     dns = models.CharField(max_length=100, null=True, blank=True)
     host_group = models.ForeignKey(
@@ -228,3 +228,12 @@ class Host(models.Model):
 
     def __str__(self):
         return f"{self.host_name}-{self.host_ip}"
+
+
+class HostCredentials(models.Model):
+    host = models.ForeignKey(Host, on_delete=models.CASCADE)
+    username = models.CharField(max_length=50)
+    password = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.host.host}"

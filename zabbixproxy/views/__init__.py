@@ -1,4 +1,5 @@
 from zabbixproxy.views.ancibal_runner import AnsibleDeployView
+from zabbixproxy.views.check_reachability import CheckReachabilityView
 from zabbixproxy.views.create_host import HostAPIView
 from zabbixproxy.views.create_host_v1 import ZabbixHostCreationView
 from zabbixproxy.views.create_user import ZabbixUserCreationView

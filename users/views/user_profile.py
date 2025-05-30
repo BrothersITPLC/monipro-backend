@@ -1,9 +1,12 @@
 # views.py
+import logging
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+django_logger = logging.getLogger("django")
 from users.serializers import UserProfileSerializer
 
 
@@ -25,6 +28,7 @@ class UserProfileView(APIView):
             )
 
         except AttributeError as e:
+            django_logger.error(f"Attribute error retrieving user profile: {e}")
             print(f"Error: {e}")
             return Response(
                 {
@@ -35,6 +39,7 @@ class UserProfileView(APIView):
             )
 
         except Exception as e:
+            django_logger.error(f"Unexpected error retrieving user profile: {e}")
             return Response(
                 {
                     "status": "error",

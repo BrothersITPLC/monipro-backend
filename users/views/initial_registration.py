@@ -151,6 +151,7 @@ class InitialRegistrationView(APIView):
             success, message = send_otp_via_email(email, otp_code)
 
             if not success:
+                django_logger.info(f"Failed to send OTP email: {message}")
                 raise ServiceErrorHandler("Failed to send OTP: Please try again.")
 
             # Save user only after successful email send

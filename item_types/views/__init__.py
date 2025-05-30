@@ -1,0 +1,3 @@
+from item_types.views.agent_based_items_type import AgentMonitoringItemTypesListView
+from item_types.views.monitoring_category import MonitoringCategoryListView
+from item_types.views.simple_check_item_types import SimpleCheckItemTypesListView

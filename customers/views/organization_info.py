@@ -17,7 +17,6 @@ class OrganizationInfoCreateView(APIView):
             required=[
                 "user_id",
                 "organization_phone",
-                "payment_provider",
                 "organization_payment_plan",
                 "organization_payment_duration",
                 "is_private",
@@ -40,9 +39,6 @@ class OrganizationInfoCreateView(APIView):
                     type=openapi.TYPE_STRING,
                     description="Description of the organization",
                     nullable=True,
-                ),
-                "payment_provider": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="ID of the payment provider"
                 ),
                 "organization_payment_plan": openapi.Schema(
                     type=openapi.TYPE_INTEGER, description="ID of the payment plan"

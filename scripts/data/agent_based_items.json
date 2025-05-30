@@ -1,0 +1,51 @@
+[
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 1,
+      "fields": {
+        "name": "CPU Usage",
+        "description": "Monitors how much of the CPU is being used by the system and processes."
+      }
+    },
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 2,
+      "fields": {
+        "name": "Memory Usage",
+        "description": "Tracks the amount of RAM in use, free, or cached."
+      }
+    },
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 3,
+      "fields": {
+        "name": "Disk Usage",
+        "description": "Monitors the used and available space on disks or partitions."
+      }
+    },
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 4,
+      "fields": {
+        "name": "System Uptime",
+        "description": "Shows how long the system has been running since the last reboot."
+      }
+    },
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 5,
+      "fields": {
+        "name": "Network Traffic",
+        "description": "Measures the amount of incoming and outgoing data on network interfaces."
+      }
+    },
+    {
+      "model": "item_types.agentmonitoringitemtype",
+      "pk": 6,
+      "fields": {
+        "name": "Processes Count",
+        "description": "Counts the number of active or running processes."
+      }
+    }
+  ]
+  

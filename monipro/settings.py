@@ -95,6 +95,9 @@ INSTALLED_APPS = [
     "zabbixproxy",
     "jobs",
     "agents",
+    "item_types",
+    "scripts",
+    "payment",
     # therd party apps
     "corsheaders",
     "rest_framework",
@@ -291,7 +294,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
 # REDIRECT_URL = "https://monipro.brothersit.dev/social/auth/google/callback"
 
-
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -302,38 +306,76 @@ LOGGING = {
         },
     },
     "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "level": "DEBUG",
+        },
         "zabbix_file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "logs", "zabbix.log"),
+            "filename": os.path.join(LOG_DIR, "zabbix.log"),
             "formatter": "default",
         },
         "django_file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "logs", "django.log"),
+            "filename": os.path.join(LOG_DIR, "django.log"),
             "formatter": "default",
         },
         "ansibal_file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "logs", "ansibal.log"),
+            "filename": os.path.join(LOG_DIR, "ansibal.log"),
+            "formatter": "default",
+        },
+        "celery_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "celery.log"),
+            "formatter": "default",
+        },
+        "sms_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "sms.log"),
+            "formatter": "default",
+        },
+        "payment_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "payment.log"),
             "formatter": "default",
         },
     },
     "loggers": {
         "zabbix": {
-            "handlers": ["zabbix_file"],
+            "handlers": ["zabbix_file", "console"],
             "level": "INFO",
             "propagate": False,
         },
         "django": {
-            "handlers": ["django_file"],
+            "handlers": ["django_file", "console"],
             "level": "INFO",
             "propagate": True,
         },
         "ansibal": {
-            "handlers": ["ansibal_file"],
+            "handlers": ["ansibal_file", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "celery": {
+            "handlers": ["celery_file", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "sms": {
+            "handlers": ["sms_file", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "payment": {
+            "handlers": ["payment_file", "console"],
             "level": "INFO",
             "propagate": True,
         },
@@ -364,3 +406,6 @@ CELERY_TIMEZONE = TIME_ZONE
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+CHAPA_TRANSACTION_MODEL = "payment.ChapaTransaction"

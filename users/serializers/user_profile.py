@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from payment.models import Transaction
 from users.serializers import ProfilePictureUpdateSerializer
 from zabbixproxy.models import ZabbixHostGroup, ZabbixUser, ZabbixUserGroup
 
@@ -16,6 +17,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     organization_info_completed = serializers.SerializerMethodField()
     user_have_zabbix_credentials = serializers.SerializerMethodField()
     user_have_zabbix_user = serializers.SerializerMethodField()
+    user_have_completed_payment = serializers.SerializerMethodField()
 
     # Organization fields (conditionally included)
     organization_id = serializers.IntegerField(
@@ -59,6 +61,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "organization_description",
             "organization_payment_plan",
             "organization_payment_duration",
+            "user_have_completed_payment",
         ]
 
     def get_organization_info_completed(self, obj):
@@ -81,6 +84,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             if obj.organization.organization_payment_plan
             else None
         )
+
+    def get_user_have_completed_payment(self, obj):
+        organization = getattr(obj, "organization", None)
+        if not organization:
+            return None
+        print("one")
+        transaction = (
+            Transaction.objects.filter(customer=organization).order_by("-id").first()
+        )
+        return transaction.status if transaction else None
 
     def get_organization_payment_duration(self, obj):
         if not hasattr(obj, "organization") or not obj.organization:

@@ -10,7 +10,6 @@ from django.views.decorators.http import require_GET
 from utils import ServiceErrorHandler
 from zabbixproxy.credentials_functions import zabbix_login
 from zabbixproxy.host_items_functions import get_real_time_data
-from zabbixproxy.models import ZabbixAuthToken
 
 api_url = settings.ZABBIX_API_URL
 username = settings.ZABBIX_ADMIN_USER
@@ -45,9 +44,7 @@ def get_host_items(request):
             return JsonResponse({"error": "Missing hostids parameter"}, status=400)
 
         # Get auth token using the zabbix_login function
-        auth_token = ZabbixAuthToken.objects.first()
-        if not auth_token:
-            auth_token = ZabbixAuthToken.get_or_create_token(get_zabbix_auth_token())
+        auth_token = get_zabbix_auth_token()
 
         # Prepare the request to Zabbix API
         zabbix_request = {

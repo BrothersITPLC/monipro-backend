@@ -30,7 +30,6 @@ class OrganizationInfoSerializer(serializers.ModelSerializer):
             "organization_phone",
             "organization_website",
             "organization_description",
-            "payment_provider",
             "organization_payment_plan",
             "organization_payment_duration",
             "user_id",
@@ -46,8 +45,6 @@ class OrganizationInfoSerializer(serializers.ModelSerializer):
         required_errors = []
         if not attrs.get("organization_phone"):
             required_errors.append("Organization phone is required")
-        if not attrs.get("payment_provider"):
-            required_errors.append("Payment provider is required")
         if not attrs.get("organization_payment_plan"):
             required_errors.append("Payment plan is required")
         if not attrs.get("organization_payment_duration"):

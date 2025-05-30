@@ -1,1 +1,2 @@
-from .payment_plane import PaymentPlanListView
+from subscription.views.payment_plane import PaymentPlanListView
+from subscription.views.payment_provider import PaymentProviderView

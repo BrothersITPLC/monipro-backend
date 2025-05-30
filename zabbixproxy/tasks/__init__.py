@@ -1,4 +1,5 @@
 from zabbixproxy.tasks.agent_deployment import deploy_zabbix_agent_task
 from zabbixproxy.tasks.host_creation import create_zabbix_host_task
 from zabbixproxy.tasks.host_record import create_zabbix_host_record_task
+from zabbixproxy.tasks.simple_check_workflow import simple_check_host_create_workflow
 from zabbixproxy.tasks.workflow import create_host_workflow

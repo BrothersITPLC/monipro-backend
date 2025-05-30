@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
 from zabbixproxy.credentials_functions import create_user, zabbix_login
-from zabbixproxy.models import ZabbixAuthToken, ZabbixUser, ZabbixUserGroup
+from zabbixproxy.models import ZabbixUser, ZabbixUserGroup
 
 
 class ZabbixUserCreationView(APIView):
@@ -63,11 +63,7 @@ class ZabbixUserCreationView(APIView):
             )
 
         try:
-            auth_token = ZabbixAuthToken.objects.first()
-            if not auth_token:
-                auth_token = ZabbixAuthToken.get_or_create_token(
-                    self.get_zabbix_auth_token()
-                )
+            auth_token = self.get_zabbix_auth_token()
 
             # Fix for transaction.atomic() type issue
             atomic_context = cast(Any, transaction.atomic())

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from utils import ServiceErrorHandler
 from zabbixproxy.models import Host
 
 
@@ -17,10 +18,8 @@ class HostSerializer(serializers.ModelSerializer):
         )
 
         if device_type == "network" and not network_device_type:
-            raise serializers.ValidationError(
-                {
-                    "network_device_type": "This field is required when device_type is 'network'."
-                }
+            raise ServiceErrorHandler(
+                "network device type required when device_type is 'network'."
             )
 
         return data
