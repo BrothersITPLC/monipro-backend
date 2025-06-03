@@ -49,3 +49,12 @@ urlpatterns = [
     path("get-team-users/", GetTeamUsersView.as_view(), name="get-team-users"),
     path("set-active/", SetUserActiveAPIView.as_view(), name="set-user-active"),
 ]
+from users.views.login import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+urlpatterns += [
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+]

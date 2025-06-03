@@ -25,7 +25,7 @@ ZABBIX_DEFAULT_PASSWORD = os.getenv("ZABBIX_DEFAULT_PASSWORD", "nochangeatall")
 # CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS") == "True"
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "monipro.brothersit.dev"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "monipro.brothersit.dev", "192.168.10.118"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -164,6 +164,8 @@ JWT_AUTH = {
         "/api/password-reset/",
         "/api/google-exchange/",
         "/api/deploy/",
+        "/api/token/refresh/",
+        "/api/token/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",

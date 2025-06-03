@@ -11,3 +11,4 @@ from users.serializers.team_user_by_organization import TeamUserByOrganizationSe
 from users.serializers.update_profile import UpdateProfileSerializer
 from users.serializers.user_profile import UserProfileSerializer
 from users.serializers.verify_registration_otp import VerifyRegistrationOtpSerializer
+from .login import CustomTokenObtainPairSerializer

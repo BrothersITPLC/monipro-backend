@@ -12,7 +12,7 @@ schema_view = get_schema_view(
         default_version="v1",
         description="Description of your API",
     ),
-    url="http://localhost:8080/",  # Add this line to set the base URL
+    url="http://localhost:8000/",  # Add this line to set the base URL
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
