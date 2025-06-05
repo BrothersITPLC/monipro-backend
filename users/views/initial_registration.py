@@ -12,12 +12,17 @@ from users.models import OTP, RegistrationAttempt, User, generate_unique_otp
 from users.serializers import InitialRegistrationSerializer
 from utils import ServiceErrorHandler, send_otp_via_email
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 django_logger = logging.getLogger("django")
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 
 class InitialRegistrationView(APIView):
     """
     API endpoint for initial organization registration with email verification.
+    Now with proper CSRF protection.
 
     Requires:
     - email (string): Valid organization email
