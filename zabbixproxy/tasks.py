@@ -1,16 +1,19 @@
-
-# Import all tasks from individual modules
 from zabbixproxy.tasks import (
-    create_host_workflow,
-    create_zabbix_host_record_task,
-    create_zabbix_host_task,
-    deploy_zabbix_agent_task,
+    agent_base_host_creation_task,
+    host_creation_task,
+    host_creation_workflow,
+    interfaceid_retrieval_task,
+    item_creation_task,
+    update_host_lifecycle_status_failure_task,
+    update_host_lifecycle_status_success_task,
 )
 
-# Re-export all tasks
 __all__ = [
-    'deploy_zabbix_agent_task',
-    'create_zabbix_host_task',
-    'create_zabbix_host_record_task',
-    'create_host_workflow',
+    agent_base_host_creation_task,
+    host_creation_task,
+    host_creation_workflow,
+    interfaceid_retrieval_task,
+    item_creation_task,
+    update_host_lifecycle_status_failure_task,
+    update_host_lifecycle_status_success_task,
 ]

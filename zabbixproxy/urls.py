@@ -3,12 +3,14 @@ from django.urls import path
 from scripts.Test.views.send_sms import SendSMSView
 from zabbixproxy.alert_functions import get_zabbix_alerts
 from zabbixproxy.host_items_functions import get_host_items, get_real_time_data
-from zabbixproxy.views import (  # ZabbixHostCreationView,
+from zabbixproxy.views import (
     AnsibleDeployView,
     CheckReachabilityView,
+    GetTemplateNameView,
     GetZabbixHostes,
     HostAndUserGroupCreationView,
     HostAPIView,
+    SimpleCheckZabbixHostCreationView,
     ZabbixUserCreationView,
 )
 
@@ -16,9 +18,6 @@ urlpatterns = [
     path(
         "zabbix-users/", ZabbixUserCreationView.as_view(), name="zabbix-user-creation"
     ),
-    # path(
-    #     "zabbix-hosts/", ZabbixHostCreationView.as_view(), name="zabbix-host-creation"
-    # ),
     path(
         "zabbix-credentials/",
         HostAndUserGroupCreationView.as_view(),
@@ -33,4 +32,10 @@ urlpatterns = [
     path("local-hosts/<int:pk>/", HostAPIView.as_view(), name="local-host-detail"),
     path("send-sms/", SendSMSView.as_view(), name="send-sms"),
     path("reachability/", CheckReachabilityView.as_view(), name="reachability"),
+    path(
+        "post-host-creation/",
+        SimpleCheckZabbixHostCreationView.as_view(),
+        name="post_host_creation",
+    ),
+    path("template-name/", GetTemplateNameView.as_view(), name="template-name"),
 ]
