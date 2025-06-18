@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Host ICMP Ping Status",
+    "key_": "icmpping[,,5,1000,56,500]",
+    "type": 3,
+    "value_type": 3,
+    "delay": "60s",
+    "units": "",
+    "interfaceid": "<INTERFACE_ID>",
+    "history": "<HISTORY>",
+    "trends": "<TRENDS>",
+    "hostid": "<HOST_ID>",
+    "description": "Host availability via ICMP (1 = up, 0 = down).(Gauge graphs)"
+  },
+  {
+    "name": "ICMP Ping Response Time (avg)",
+    "key_": "icmppingsec[,,5,1000,56,500]",
+    "type": 3,
+    "value_type": 0,
+    "delay": "60s",
+    "units": "s",
+    "interfaceid": "<INTERFACE_ID>",
+    "history": "<HISTORY>",
+    "trends": "<TRENDS>",
+    "hostid": "<HOST_ID>",
+    "description": "Average ICMP response time in seconds.(Line graphs)"
+  },
+  {
+    "name": "ICMP Ping Packet Loss",
+    "key_": "icmppingloss[,,5,1000,56,500]",
+    "type": 3,
+    "value_type": 0,
+    "delay": "60s",
+    "units": "%",
+    "interfaceid": "<INTERFACE_ID>",
+    "history": "<HISTORY>",
+    "trends": "<TRENDS>",
+    "hostid": "<HOST_ID>",
+    "description": "Packet loss percentage.(Bar graphs)"
+  },
+  {
+    "name": "ICMP Ping Max Response Time",
+    "key_": "icmppingsec[,,5,1000,56,500,max]",
+    "type": 3,
+    "value_type": 0,
+    "delay": "60s",
+    "units": "s",
+    "interfaceid": "<INTERFACE_ID>",
+    "history": "<HISTORY>",
+    "trends": "<TRENDS>",
+    "hostid": "<HOST_ID>",
+    "description": "Maximum ICMP response time.(Line graphs)"
+  },
+  {
+    "name": "ICMP Ping Min Response Time",
+    "key_": "icmppingsec[,,5,1000,56,500,min]",
+    "type": 3,
+    "value_type": 0,
+    "delay": "60s",
+    "units": "s",
+    "interfaceid": "<INTERFACE_ID>",
+    "history": "<HISTORY>",
+    "trends": "<TRENDS>",
+    "hostid": "<HOST_ID>",
+    "description": "Minimum ICMP response time.(Line graphs)"
+  }
+]
