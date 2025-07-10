@@ -270,22 +270,26 @@ SOCIALACCOUNT_PROVIDERS = {
         "APP": {
             "client_id": "289478844187-2lckh4oovv3jied47060dajl12g83e8b.apps.googleusercontent.com",
             "secret": "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",
-            "key": "",
+            "key": ""
+        },
+        "ANDROID": {
+            "client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
+            "package_name": "com.example.monipro_mobile",
+            "certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737"
         },
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
-        "OAUTH_PKCE_ENABLED": True,
-        "REDIRECT_URI": "http://localhost:8000/api/auth/google/callback/",
-    },
-    "github": {
-        "APP": {
-            "client_id": "Ov23lilbz1w8uUzFXM9n",
-            "secret": "94398e32cbd5847690300ad14a93e45e50039606",
-            "key": "",
+        "AUTH_PARAMS": {
+            "access_type": "online",
+            # "prompt": "select_account"
         },
-        "SCOPE": ["user:email"],
-        "REDIRECT_URI": "http://localhost:8000/api/auth/github/callback/",
-    },
+        "OAUTH_PKCE_ENABLED": True,
+        # Callback URLs
+        "CALLBACK_URL": "https://monipro.brothersit.dev/api/auth/google/callback/",
+        "REDIRECT_URIS": [
+            "https://monipro.brothersit.dev/api/auth/google/callback/",
+            "com.example.monipro_mobile:/oauth2callback"
+        ]
+    }
 }
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True
