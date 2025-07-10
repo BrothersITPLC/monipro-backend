@@ -1,5 +1,9 @@
-from zabbixproxy.tasks.agent_deployment import deploy_zabbix_agent_task
-from zabbixproxy.tasks.host_creation import create_zabbix_host_task
-from zabbixproxy.tasks.host_record import create_zabbix_host_record_task
-from zabbixproxy.tasks.simple_check_workflow import simple_check_host_create_workflow
-from zabbixproxy.tasks.workflow import create_host_workflow
+from zabbixproxy.tasks.agent_base_host_creation import agent_base_host_creation_task
+from zabbixproxy.tasks.host_creation import host_creation_task
+from zabbixproxy.tasks.host_creation_workflow import host_creation_workflow
+from zabbixproxy.tasks.host_lifecycle_handlers import (
+    update_host_lifecycle_status_failure_task,
+    update_host_lifecycle_status_success_task,
+)
+from zabbixproxy.tasks.interfaceid_retrieval import interfaceid_retrieval_task
+from zabbixproxy.tasks.item_creation import item_creation_task

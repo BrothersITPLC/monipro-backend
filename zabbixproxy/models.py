@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from customers.models import OrganizationInfo
+from item_types.models import MonitoringCategoryAndItemType
 
 User = get_user_model()
 
@@ -86,20 +87,6 @@ class ZabbixAuthToken(models.Model):
         return self.auth
 
 
-# class ZabbixAuthToken(models.Model):
-#     auth = models.CharField(max_length=100, null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
-#     @classmethod
-#     def get_or_create_token(cls, auth_value):
-#         cls.objects.all().delete()
-#         return cls.objects.create(auth=auth_value)
-
-#     def __str__(self):
-#         return self.auth
-
-
 class TaskStatus(models.Model):
     """Model to track the status of asynchronous tasks"""
 
@@ -156,52 +143,6 @@ class TaskStatus(models.Model):
         self.save()
 
 
-class HostForReachabilityMonitoring(models.Model):
-    host = models.ForeignKey(ZabbixHost, on_delete=models.CASCADE)
-    host_ip = models.CharField(max_length=50, null=True, blank=True)
-    dns = models.CharField(max_length=50, null=True, blank=True)
-    hostgroup = models.ForeignKey(ZabbixHostGroup, on_delete=models.CASCADE)
-    hostid = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.host}-{self.hostid}"
-
-
-class MonitoringType(models.TextChoices):
-    SIMPLE_CHECKS = (
-        "simple_checks",
-        "Simple Checks – Basic Network and Service Availability Checks",
-    )
-    AGENT = "agent", "Agent – Advanced Agent-Based Monitoring (Zabbix Agent2)"
-    SNMP = (
-        "snmp",
-        "SNMP – Network Device Monitoring via SNMP (Simple Network Management Protocol)",
-    )
-    IPMI = (
-        "ipmi",
-        "IPMI – Hardware-Level Monitoring via IPMI (Intelligent Platform Management Interface)",
-    )
-    APPLICATION_LEVEL = (
-        "application_level",
-        "Application Level – Application-Specific Monitoring (e.g., Databases, Web Apps, Services)",
-    )
-
-
-class zabbbixTemplate(models.Model):
-    templateid = models.CharField(max_length=50, null=True, blank=True)
-    template_name = models.CharField(max_length=50, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    monitoring_type = models.CharField(
-        max_length=32,
-        choices=MonitoringType.choices,
-        default=MonitoringType.SIMPLE_CHECKS,
-    )
-
-    def __str__(self):
-        return f"{self.template_name}-{self.templateid}"
-
-
 class Host(models.Model):
     DEVICE_TYPE_CHOICES = (
         ("vm", "vm"),
@@ -214,8 +155,8 @@ class Host(models.Model):
         ("load_balancer", "load_balancer"),
     )
     host = models.CharField(max_length=255, unique=True)
-    ip = models.CharField(max_length=100, null=True, blank=True)
-    dns = models.CharField(max_length=100, null=True, blank=True)
+    ip = models.CharField(max_length=100, blank=True, default="")
+    dns = models.CharField(max_length=100, blank=True, default="")
     host_group = models.ForeignKey(
         ZabbixHostGroup, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -225,9 +166,27 @@ class Host(models.Model):
     network_device_type = models.CharField(
         max_length=50, choices=NETWORK_DEVICE_TYPE, null=True, blank=True
     )
+    host_id = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
         return f"{self.host_name}-{self.host_ip}"
+
+
+class HostLifecycle(models.Model):
+    STATUS_CHOICES = (
+        ("active", "active"),
+        ("inactive", "inactive"),
+        ("creation_failed", "creation_failed"),
+        ("deletion_failed", "deletion_failed"),
+        ("creation_in_progress", "in_progress"),
+        ("deletion_in_progress", "deletion_in_progress"),
+    )
+    host_monitoring_category = models.ForeignKey(
+        MonitoringCategoryAndItemType, on_delete=models.DO_NOTHING
+    )
+    host = models.ForeignKey(Host, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    status_message = models.TextField(null=True, blank=True)
 
 
 class HostCredentials(models.Model):

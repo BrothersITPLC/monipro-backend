@@ -5,17 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.models import ZabbixHost
-from zabbixproxy.serializers import ZabbixHostSerializer
+from zabbixproxy.models import HostLifecycle
+from zabbixproxy.serializers import ActiveHostSerializer
 
 
 class GetZabbixHostes(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        hosts = cast(Any, ZabbixHost).objects.filter(hostgroup__created_by=request.user)
+        active_hosts = HostLifecycle.objects.filter(status="active")
 
-        if not hosts:
+        if not active_hosts:
             return Response(
                 {
                     "status": "error",
@@ -25,7 +25,7 @@ class GetZabbixHostes(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = ZabbixHostSerializer(hosts, many=True)
+        serializer = ActiveHostSerializer(active_hosts, many=True)
 
         return Response(
             {

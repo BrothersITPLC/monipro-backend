@@ -1,1 +1,2 @@
 from zabbixproxy.host_functions.host_creat import create_host
+from zabbixproxy.host_functions.host_creation import host_creation

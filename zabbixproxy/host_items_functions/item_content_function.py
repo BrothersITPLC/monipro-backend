@@ -14,11 +14,9 @@ zabbix_logger = logging.getLogger("zabbix")
 django_logger = logging.getLogger("django")
 
 
-def get_zabbix_auth_token(self):
+def get_zabbix_auth_token():
     try:
-        return zabbix_login(
-            api_url=self.api_url, username=self.username, password=self.password
-        )
+        return zabbix_login(api_url=api_url, username=username, password=password)
     except ServiceErrorHandler as e:
         raise ServiceErrorHandler(f"{str(e)}")
 

@@ -1,25 +1,13 @@
+# serializers.py
 from rest_framework import serializers
 
-from zabbixproxy.models import ZabbixHost
+from zabbixproxy.models import HostLifecycle
 
 
-class ZabbixHostSerializer(serializers.ModelSerializer):
-    hostgroup_name = serializers.CharField(source="hostgroup.name", read_only=True)
-    hostgroupid = serializers.CharField(source="hostgroup.hostgroupid", read_only=True)
+class ActiveHostSerializer(serializers.ModelSerializer):
+    host = serializers.CharField(source="host.host")
+    host_id = serializers.IntegerField(source="host.host_id")
 
     class Meta:
-        model = ZabbixHost
-        fields = [
-            "id",
-            "host",
-            "hostid",
-            "ip",
-            "dns",
-            "port",
-            "hostgroup_name",
-            "hostgroupid",
-            "device_type",
-            "dns",
-            "network_device_type",
-            "network_type",
-        ]
+        model = HostLifecycle
+        fields = ["host", "host_id"]

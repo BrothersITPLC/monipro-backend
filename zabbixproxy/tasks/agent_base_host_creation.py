@@ -1,28 +1,26 @@
 import logging
-from typing import Any, Dict
+import re
+from typing import Any, Dict, Optional, cast
 
 from celery import shared_task
 
-from item_types.models import MonitoringCategoryAndItemType
 from utils import ServiceErrorHandler
-from zabbixproxy.host_functions import host_creation
-from zabbixproxy.models import Host, HostCredentials, HostLifecycle
+from zabbixproxy.automation_functions.ansibal_runner import create_zabbix_agent
+from zabbixproxy.models import Host, HostLifecycle, MonitoringCategoryAndItemType
 
 celery_logger = logging.getLogger("celery")
 
 
 @shared_task(bind=True, max_retries=3)
-def host_creation_task(self, prev_task_result: Dict[str, Any]):
+def agent_base_host_creation_task(
+    self,
+    initial_task_params,
+) -> Dict[str, Any]:
     """
-    Celery task to create a Zabbix host.
-    Expects host_lifecycle_id as input and passes it along.
-    No longer creates HostLifecycle; HostLifecycle is created by the orchestrator task.
+    Celery task to deploy Zabbix agent using Ansible.
+    It passes required parameters to the next task (Zabbix host creation).
+    It now handles HostLifecycle updates directly.
     """
-
-    if "initial_task_params" in prev_task_result:
-        initial_task_params = prev_task_result["initial_task_params"]
-    else:
-        initial_task_params = prev_task_result
 
     api_url = initial_task_params.get("api_url")
     auth_token = initial_task_params.get("auth_token")
@@ -36,17 +34,17 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
     host_lifecycle_id = initial_task_params.get("host_lifecycle_id")
 
     celery_logger.info(
-        f"HostLifecycle ID: {host_lifecycle_id} - Creating host with parameters: hostgroup={hostgroup}, ip={ip}, dns={dns}, host={host_name} "
+        f"HostLifecycle ID: {host_lifecycle_id} - Initiating agent deployment for host: {host_name} ({ip})"
     )
 
+    host_username = item_template_list.get("username")
+    host_password = item_template_list.get("password")
     local_host_id = item_template_list.get("local_host_id")
     category_id = item_template_list.get("category_id")
-    host_username = item_template_list.get("username", "")
-    host_password = item_template_list.get("password", "")
+    target_host = ip if useip else dns
 
     host_lifecycle = None
     try:
-
         host_lifecycle = HostLifecycle.objects.get(id=host_lifecycle_id)
 
         host = Host.objects.get(pk=local_host_id)
@@ -54,41 +52,28 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
             id=category_id
         )
 
-        if host_username != "" and host_password != "":
-            if not HostCredentials.objects.filter(host=host).exists():
-                HostCredentials.objects.create(
-                    host=host,
-                    username=host_username,
-                    password=host_password,
-                )
-                celery_logger.info(
-                    f"HostCredentials created for Host ID: {local_host_id}"
-                )
-            else:
-                celery_logger.info(
-                    f"HostCredentials already exist for Host ID: {local_host_id}, skipping creation."
-                )
-
     except HostLifecycle.DoesNotExist:
-        error_msg = f"HostLifecycle with ID {host_lifecycle_id} not found in host_creationion_task."
+        error_msg = f"HostLifecycle with ID {host_lifecycle_id} not found in agent_base_host_creation_task."
         celery_logger.critical(error_msg)
         raise ServiceErrorHandler(error_msg)
     except Host.DoesNotExist:
-        error_msg = f"Host with ID {local_host_id} not found for Zabbix host creation."
+        error_msg = (
+            f"Host with ID {local_host_id} not found for Zabbix agent deployment."
+        )
         celery_logger.error(error_msg)
         if host_lifecycle:
             host_lifecycle.status_message = error_msg
             host_lifecycle.save()
         raise ServiceErrorHandler(error_msg)
     except MonitoringCategoryAndItemType.DoesNotExist:
-        error_msg = f"Monitoring category with ID {category_id} not found for Zabbix host creation."
+        error_msg = f"Monitoring category with ID {category_id} not found for Zabbix agent deployment."
         celery_logger.error(error_msg)
         if host_lifecycle:
             host_lifecycle.status_message = error_msg
             host_lifecycle.save()
         raise ServiceErrorHandler(error_msg)
     except Exception as e:
-        error_msg = f"Database error or unexpected issue during initial checks in host_creationion_task: {str(e)}"
+        error_msg = f"Database error or unexpected issue during initial checks in agent_base_host_creation_task: {str(e)}"
         celery_logger.exception(error_msg)
         if host_lifecycle:
             host_lifecycle.status_message = error_msg
@@ -96,43 +81,65 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
         raise ServiceErrorHandler(error_msg)
 
     try:
-        zabbix_host_hostid = host_creation(
-            api_url=api_url,
-            auth_token=auth_token,
-            hostgroup=hostgroup,
-            host_name=host_name,
-            ip=ip,
+
+        agent_response = create_zabbix_agent(
             port=port,
-            dns=dns,
-            useip=useip,
+            target_host=target_host,
+            username=host_username,
+            hostname=host_name,
+            password=host_password,
+            tags="install",
         )
 
-        try:
-            Host.objects.filter(pk=local_host_id).update(host_id=zabbix_host_hostid)
-        except Exception as e:
-            error_msg = f"Database error or unexpected issue during update in host_creationion_task: {str(e)}"
-            celery_logger.exception(error_msg)
+        overall_success = agent_response.get("overall_success", False)
+        unsuccessfully_executed_tasks = agent_response.get(
+            "unsuccessfully_executed_tasks", []
+        )
+        error_details = []
+
+        if not overall_success:
+            if unsuccessfully_executed_tasks:
+                for error in unsuccessfully_executed_tasks:
+                    error_details.append(
+                        f"{error.get('task', 'Unknown task')}: {error.get('details', 'No details')}"
+                    )
+                error_msg = "Zabbix agent deployment failed: " + "; ".join(
+                    error_details
+                )
+            else:
+                error_msg = "Zabbix agent deployment failed with unknown reason."
+
+            celery_logger.error(f"HostLifecycle {host_lifecycle_id}: {error_msg}")
             if host_lifecycle:
                 host_lifecycle.status_message = error_msg
                 host_lifecycle.save()
             raise ServiceErrorHandler(error_msg)
 
+        celery_logger.info(
+            f"HostLifecycle {host_lifecycle_id}: Zabbix agent deployed successfully for host '{host_name}'."
+        )
+
         return {
             "status": "success",
-            "message": f"Successfully created Zabbix host '{host_name}' with ID: {zabbix_host_hostid}",
-            "next_task_params": {
+            "message": f"Successfully deployed Zabbix agent for host '{host_name}'.",
+            "initial_task_params": {
                 "api_url": api_url,
                 "auth_token": auth_token,
                 "host_name": host_name,
                 "hostgroup": hostgroup,
-                "zabbix_host_hostid": zabbix_host_hostid,
+                "ip": ip,
+                "port": port,
+                "dns": dns,
+                "useip": useip,
                 "item_template_list": item_template_list,
                 "host_lifecycle_id": host_lifecycle_id,
             },
         }
 
     except ServiceErrorHandler as e:
-        error_msg = f"Error creating Zabbix host: {str(e)}"
+        error_msg = (
+            f"Error in agent_base_host_creation_task (agent deployment): {str(e)}"
+        )
         if self.request.retries < self.max_retries and (
             "not authorized" in str(e).lower() or "session terminated" in str(e).lower()
         ):
@@ -140,7 +147,9 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
                 f"Retrying task {self.request.id} for HostLifecycle {host_lifecycle_id} (attempt {self.request.retries + 1}/{self.max_retries}): {error_msg}"
             )
             if host_lifecycle:
-                host_lifecycle.status_message = f"Retrying host creation: {error_msg}"
+                host_lifecycle.status_message = (
+                    f"Retrying agent deployment: {error_msg}"
+                )
                 host_lifecycle.save()
             raise self.retry(countdown=5, exc=e)
         else:
@@ -153,7 +162,7 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
             raise ServiceErrorHandler(error_msg)
 
     except Exception as e:
-        error_msg = f"Unexpected error creating Zabbix host: {str(e)}"
+        error_msg = f"Unexpected error in agent_base_host_creation_task (agent deployment): {str(e)}"
         if self.request.retries < self.max_retries and (
             "not authorized" in str(e).lower() or "session terminated" in str(e).lower()
         ):
@@ -162,7 +171,7 @@ def host_creation_task(self, prev_task_result: Dict[str, Any]):
             )
             if host_lifecycle:
                 host_lifecycle.status_message = (
-                    f"Retrying host creation due to unexpected error: {error_msg}"
+                    f"Retrying agent deployment due to unexpected error: {error_msg}"
                 )
                 host_lifecycle.save()
             raise self.retry(countdown=5, exc=e)

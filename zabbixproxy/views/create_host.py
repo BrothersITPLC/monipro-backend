@@ -1,6 +1,5 @@
 import logging
 
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,36 +7,127 @@ from rest_framework.views import APIView
 
 django_logger = logging.getLogger("django")
 from utils import ServiceErrorHandler
-from zabbixproxy.models import Host
+from zabbixproxy.models import Host, HostLifecycle
 from zabbixproxy.serializers import HostSerializer
 
 
 class HostAPIView(APIView):
+    """
+    API view for managing hosts in the Zabbix proxy.
+    This view allows authenticated users to create, retrieve, update, and delete hosts.
+    It handles errors gracefully and logs them for debugging purposes.
+    """
+
+    # permission_classes = [IsAuthenticated]
+
+    # def get(self, request):
+    #     user = request.user
+    #     hosts = Host.objects.filter(
+    #         host_group__id=user.organization.organization_hostgroup.first().id
+    #     )
+    #     hosted_hostes = []
+    #     local_hosts = []
+    #     for host in hosts:
+    #         if host in HostLifecycle.objects.all():
+    #             serializer = HostSerializer(host)
+    #             hosted_hostes.append(serializer.data)
+    #         else:
+    #             serializer = HostSerializer(host)
+    #             local_hosts.append(host)
+    #     data = {
+    #         "hosted_hosts": hosted_hostes,
+    #         "local_hosts": local_hosts,
+    #     }
+
+    #     hosted_hostes = HostLifecycle.objects.filter()
+    #     if not hosts:
+    #         django_logger.error("No hosts found in the database.")
+    #         return Response(
+    #             {
+    #                 "status": "error",
+    #                 "message": "Hosts not found",
+    #             },
+    #             status=status.HTTP_404_NOT_FOUND,
+    #         )
+    #     serializer = HostSerializer(hosts, many=True)
+    #     return Response(
+    #         {
+    #             "status": "success",
+    #             "message": "Hosts list retrieved successfully",
+    #             "data": data,
+    #         },
+    #         status=status.HTTP_200_OK,
+    #     )
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        hosts = Host.objects.filter(
-            host_group__id=user.organization.organization_hostgroup.first().id
-        )
-        if not hosts:
-            django_logger.error("No hosts found in the database.")
+        try:
+            user = request.user
+
+            # Ensure the organization and host group exist
+            host_group = user.organization.organization_hostgroup.first()
+            if not host_group:
+                django_logger.error(
+                    "No host group associated with the user's organization."
+                )
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "No host group found for your organization.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Get hosts in the user's host group
+            hosts = Host.objects.filter(host_group=host_group).select_related(
+                "host_group"
+            )
+            if not hosts.exists():
+                django_logger.warning("No hosts found in the host group.")
+                return Response(
+                    {"status": "error", "message": "No hosts found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Get lifecycle entries (linked via foreign key)
+            lifecycle_host_ids = set(
+                HostLifecycle.objects.filter(host__in=hosts).values_list(
+                    "host_id", flat=True
+                )
+            )
+
+            hosted_hosts = []
+            local_hosts = []
+
+            for host in hosts:
+                serialized = HostSerializer(host).data
+                if host.id in lifecycle_host_ids:
+                    hosted_hosts.append(serialized)
+                else:
+                    local_hosts.append(serialized)
+
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Hosts list retrieved successfully.",
+                    "data": {
+                        "hosted_hosts": hosted_hosts,
+                        "local_hosts": local_hosts,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            django_logger.exception("An error occurred while retrieving hosts.")
             return Response(
                 {
                     "status": "error",
-                    "message": "Hosts not found",
+                    "message": "An unexpected error occurred while retrieving hosts.",
+                    "details": str(e),
                 },
-                status=status.HTTP_404_NOT_FOUND,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        serializer = HostSerializer(hosts, many=True)
-        return Response(
-            {
-                "status": "success",
-                "message": "Hosts list retrieved successfully",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
 
     def post(self, request):
         user = request.user
