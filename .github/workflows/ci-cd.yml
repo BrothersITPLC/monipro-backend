@@ -1,0 +1,77 @@
+name: Django CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Run Django Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DJANGO_SECRET_KEY: testkey
+      DEBUG: true
+      DB_NAME: test_db
+      DB_USER: test_user
+      DB_PASSWORD: test_pass
+      DB_HOST: localhost
+      DB_PORT: 5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
+      - name: Run tests
+        run: python manage.py test
+
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" == "success" ]; then
+            STATUS_MESSAGE="✅ CI Passed on branch ${{ github.ref_name }}"
+          else
+            STATUS_MESSAGE="❌ CI Failed on branch ${{ github.ref_name }}"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"*${{ github.repository }}*: $STATUS_MESSAGE\n🔁 Commit: ${{ github.sha }}\n🔗 ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\"
+          }" $SLACK_WEBHOOK_URL

@@ -36,9 +36,11 @@
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
 from users.models import User
 from utils import ServiceErrorHandler
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class LoginSerializer(serializers.Serializer):
@@ -84,3 +86,20 @@ class LoginSerializer(serializers.Serializer):
         # 5. Pass user forward
         attrs["user"] = user
         return attrs
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
+    def validate(self, attrs):
+        credentials = {
+            'email': attrs.get('email'),
+            'password': attrs.get('password'),
+        }
+
+        user = authenticate(**credentials)
+
+        if user is None:
+            raise serializers.ValidationError('No active account found with the given credentials')
+
+        data = super().validate(attrs)
+        return data
