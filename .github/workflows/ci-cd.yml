@@ -1,12 +1,11 @@
-# .github/workflows/ci-cd.yml
 # This workflow checks the code format using linters and sends a notification to Slack.
 name: Django Lint Check & Slack Notify
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   lint:
