@@ -1,3 +1,5 @@
+# .github/workflows/ci-cd.yml
+# This workflow runs Django tests and sends notifications on success or failure.
 name: Django CI/CD
 
 on:
