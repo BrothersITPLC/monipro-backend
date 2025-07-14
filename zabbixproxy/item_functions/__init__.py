@@ -1,2 +1,0 @@
-from zabbixproxy.item_functions.get_interfaceid import get_interfaceid
-from zabbixproxy.item_functions.item_creat_functions import item_create_function

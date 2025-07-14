@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 
 from customers.models import OrganizationInfo
-from item_types.models import MonitoringCategoryAndItemType
 
 User = get_user_model()
 
@@ -182,7 +181,7 @@ class HostLifecycle(models.Model):
         ("deletion_in_progress", "deletion_in_progress"),
     )
     host_monitoring_category = models.ForeignKey(
-        MonitoringCategoryAndItemType, on_delete=models.DO_NOTHING
+        "TemplateGroupMirror", on_delete=models.DO_NOTHING
     )
     host = models.ForeignKey(Host, on_delete=models.CASCADE)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
@@ -196,3 +195,24 @@ class HostCredentials(models.Model):
 
     def __str__(self):
         return f"{self.host.host}"
+
+
+class TemplateGroupMirror(models.Model):
+    template_group_discription = models.TextField()
+    template_group_name = models.CharField(
+        max_length=100,
+    )
+    template_group_id = models.CharField(max_length=10, blank=True, default="0")
+
+    def __str__(self):
+        return f"{self.template_group_name}"
+
+
+class TemplateMirror(models.Model):
+    template_group = models.ForeignKey(TemplateGroupMirror, on_delete=models.PROTECT)
+    template_description = models.TextField()
+    template_name = models.CharField(max_length=1000)
+    template_id = models.CharField(max_length=10, blank=True, default="0")
+
+    def __str__(self):
+        return f"{self.templat_name}"

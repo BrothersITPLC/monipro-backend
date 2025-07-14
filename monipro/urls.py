@@ -30,7 +30,6 @@ urlpatterns = [
     path("api/", include("customers.urls")),
     path("api/", include("zabbixproxy.urls")),
     path("api/", include("agents.urls")),
-    path("api/", include("item_types.urls")),
     path("api/", include("payment.urls")),
 ]
 

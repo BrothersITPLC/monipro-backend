@@ -1,11 +1,9 @@
 from rest_framework import serializers
 
-from zabbixproxy.models import HostLifecycle
+from zabbixproxy.models import TemplateMirror
 
 
-class TemplateSerializer(serializers.Serializer):
-    template = serializers.JSONField(source="host_monitoring_category.template")
-
+class TemplateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HostLifecycle
-        fields = ["template"]
+        model = TemplateMirror
+        fields = "__all__"

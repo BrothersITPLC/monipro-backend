@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     "zabbixproxy",
     "jobs",
     "agents",
-    "item_types",
     "scripts",
     "payment",
     # therd party apps
@@ -197,17 +196,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "monipro.wsgi.application"
 
-# FOR CONTAINERIZATION
+
+# Remote Fro Collaboration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
-        "USER": os.getenv("POSTGRES_USER", "moniprouser"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
-        "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+        "NAME": os.getenv("POSTGRES_DB"),
+        "USER": os.getenv("POSTGRES_USER"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("DATABASE_HOST"),
         "PORT": os.getenv("DATABASE_PORT", "5432"),
+        "OPTIONS": {
+            "sslmode": "require",
+            "channel_binding": "require",
+        },
     }
 }
+
+
+# FOR CONTAINERIZATION
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DB", "moniprodb"),
+#         "USER": os.getenv("POSTGRES_USER", "moniprouser"),
+#         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "monipropass"),
+#         "HOST": os.getenv("DATABASE_HOST", "moni_pro"),
+#         "PORT": os.getenv("DATABASE_PORT", "5432"),
+#     }
+# }
 
 
 # FOR TEST
@@ -387,6 +404,7 @@ CRONJOBS = [("0 0 * * *", "jobs.functions.DeleteOldTokensCronJob")]
 ZABBIX_PLAYBOOK_PATH = os.path.join(
     BASE_DIR,
     "zabbixproxy",
+    "functions",
     "automation_functions",
     "ansibal_playbooks",
     "zabbix-playbook.yml",

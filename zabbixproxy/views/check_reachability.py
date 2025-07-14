@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from zabbixproxy.check_reachability_functions import check_reachability
+from zabbixproxy.functions.check_reachability_functions import check_reachability
 
 django_logger = logging.getLogger("django")
 

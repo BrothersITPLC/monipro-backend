@@ -1,2 +1,0 @@
-from zabbixproxy.test_functions.get_alert import get_zabbix_alerts
-from zabbixproxy.test_functions.test import AnsibleDeployView

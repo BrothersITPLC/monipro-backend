@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from agents.agent import build_insight_agent
-from zabbixproxy.alert_functions.get_single_alert import get_single_alerts
+from zabbixproxy.functions.alert_functions.get_single_alert import get_single_alerts
 
 
 class AlertInsightAPIView(APIView):
