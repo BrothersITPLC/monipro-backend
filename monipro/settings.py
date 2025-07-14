@@ -1,3 +1,4 @@
+# monipro/settings.py
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -35,7 +36,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://monipro.brothersit.dev",
     "http://192.168.10.118",
-
 ]
 
 # Update CORS and CSRF settings
@@ -288,12 +288,12 @@ SOCIALACCOUNT_PROVIDERS = {
         "APP": {
             "client_id": "289478844187-2lckh4oovv3jied47060dajl12g83e8b.apps.googleusercontent.com",
             "secret": "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",
-            "key": ""
+            "key": "",
         },
         "ANDROID": {
             "client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
             "package_name": "com.example.monipro_mobile",
-            "certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737"
+            "certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737",
         },
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {
@@ -305,8 +305,8 @@ SOCIALACCOUNT_PROVIDERS = {
         "CALLBACK_URL": "https://monipro.brothersit.dev/api/auth/google/callback/",
         "REDIRECT_URIS": [
             "https://monipro.brothersit.dev/api/auth/google/callback/",
-            "com.example.monipro_mobile:/oauth2callback"
-        ]
+            "com.example.monipro_mobile:/oauth2callback",
+        ],
     }
 }
 LOGIN_REDIRECT_URL = "google-callback"
