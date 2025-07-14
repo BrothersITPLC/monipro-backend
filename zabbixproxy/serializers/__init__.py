@@ -2,4 +2,5 @@ from zabbixproxy.serializers.ansibal_runner import AnsibleRequestSerializer
 from zabbixproxy.serializers.host_create import HostSerializer
 from zabbixproxy.serializers.host_list import ActiveHostSerializer
 from zabbixproxy.serializers.template import TemplateSerializer
+from zabbixproxy.serializers.template_group import TemplateGroupSerializer
 from zabbixproxy.serializers.zabbix_user import ZabbixUserSerializer
