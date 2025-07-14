@@ -25,6 +25,7 @@ ZABBIX_DEFAULT_PASSWORD = os.getenv("ZABBIX_DEFAULT_PASSWORD", "nochangeatall")
 # CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS") == "True"
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
+
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "monipro.brothersit.dev", "192.168.10.199"]
 
 CORS_ALLOWED_ORIGINS = [
@@ -33,6 +34,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5175",
     "http://localhost:3000",
     "https://monipro.brothersit.dev",
+    "http://192.168.10.118",
+
 ]
 
 # Update CORS and CSRF settings
@@ -41,13 +44,7 @@ CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF token
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:3000",
-    "https://monipro.brothersit.dev",
-]
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 CORS_ALLOW_ALL_ORIGINS = False  # Add this line
 CORS_ORIGIN_ALLOW_ALL = False  # Add this line
 
@@ -163,6 +160,8 @@ JWT_AUTH = {
         "/api/password-reset/",
         "/api/google-exchange/",
         "/api/deploy/",
+        "/api/token/refresh/",
+        "/api/token/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",
@@ -289,22 +288,26 @@ SOCIALACCOUNT_PROVIDERS = {
         "APP": {
             "client_id": "289478844187-2lckh4oovv3jied47060dajl12g83e8b.apps.googleusercontent.com",
             "secret": "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",
-            "key": "",
+            "key": ""
+        },
+        "ANDROID": {
+            "client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
+            "package_name": "com.example.monipro_mobile",
+            "certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737"
         },
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
-        "OAUTH_PKCE_ENABLED": True,
-        "REDIRECT_URI": "http://localhost:8000/api/auth/google/callback/",
-    },
-    "github": {
-        "APP": {
-            "client_id": "Ov23lilbz1w8uUzFXM9n",
-            "secret": "94398e32cbd5847690300ad14a93e45e50039606",
-            "key": "",
+        "AUTH_PARAMS": {
+            "access_type": "online",
+            # "prompt": "select_account"
         },
-        "SCOPE": ["user:email"],
-        "REDIRECT_URI": "http://localhost:8000/api/auth/github/callback/",
-    },
+        "OAUTH_PKCE_ENABLED": True,
+        # Callback URLs
+        "CALLBACK_URL": "https://monipro.brothersit.dev/api/auth/google/callback/",
+        "REDIRECT_URIS": [
+            "https://monipro.brothersit.dev/api/auth/google/callback/",
+            "com.example.monipro_mobile:/oauth2callback"
+        ]
+    }
 }
 LOGIN_REDIRECT_URL = "google-callback"
 SOCIALACCOUNT_LOGIN_ON_GET = True

@@ -7,6 +7,8 @@ from ..serializers import VerifyRegistrationOtpSerializer
 
 class VerifyRegistrationOtp(APIView):
     def post(self, request):
+        print("Incoming verification request:", request.data)
+
         serializer = VerifyRegistrationOtpSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -31,6 +33,7 @@ class VerifyRegistrationOtp(APIView):
                     status=status.HTTP_202_ACCEPTED,
                 )
             else:
+                print("Serializer errors:", serializer.errors)
                 return Response(
                     {
                         "status": "error",
