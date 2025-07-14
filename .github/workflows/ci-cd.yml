@@ -2,9 +2,9 @@ name: CI Check for Mergeability + Slack Notify
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   check_merge_status:
