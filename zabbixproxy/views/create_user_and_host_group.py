@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
-from zabbixproxy.credentials_functions import (
+from zabbixproxy.functions.credentials_functions import (
     create_host_group,
     create_user_group,
     zabbix_login,

@@ -1,0 +1,86 @@
+active_agent_triggers_params = [
+    {
+        "expression": "nodata(/MoniPro Active Agents General/agent.ping,30m)=1",
+        "description": "Linux: MoniPro agent is not available",
+        "priority": "3",
+        "comments": "For active agents, `nodata()` with `agent.ping` is used with `{$AGENT.NODATA_TIMEOUT}` as a time threshold.",
+    },
+    {
+        "expression": "last(/MoniPro Active Agents General/kernel.maxfiles)<256",
+        "description": "Linux: Configured max number of open filedescriptors is too low",
+        "priority": "1",
+        "comments": "",
+    },
+    {
+        "expression": "last(/MoniPro Active Agents General/kernel.maxproc)<1024",
+        "description": "Linux: Configured max number of processes is too low",
+        "priority": "1",
+        "comments": "",
+    },
+    {
+        "expression": "min(/MoniPro Active Agents General/system.cpu.util,5m)>90",
+        "description": "Linux: High CPU utilization",
+        "priority": "2",
+        "comments": "CPU utilization is too high. The system might be slow to respond.",
+    },
+    {
+        "expression": "change(/MoniPro Active Agents General/system.hostname) and length(last(/MoniPro Active Agents General/system.hostname))>0",
+        "description": "Linux: System name has changed",
+        "priority": "1",
+        "comments": "The name of the system has changed. Acknowledge to close the problem manually.",
+    },
+    {
+        "expression": "change(/MoniPro Active Agents General/system.sw.os) and length(last(/MoniPro Active Agents General/system.sw.os))>0",
+        "description": "Linux: Operating system description has changed",
+        "priority": "1",
+        "comments": "The description of the operating system has changed. Possible reasons are that the system has been updated or replaced. Acknowledge to close the problem manually.",
+    },
+    {
+        "expression": "last(/MoniPro Active Agents General/system.uptime)<10m",
+        "description": "Linux: {HOST.NAME} has been restarted",
+        "priority": "2",
+        "comments": "The host uptime is less than 10 minutes.",
+    },
+    {
+        "expression": "last(/MoniPro Active Agents General/vfs.file.cksum[/etc/passwd,sha256],#1)<>last(/MoniPro Active Agents General/vfs.file.cksum[/etc/passwd,sha256],#2)",
+        "description": "Linux: /etc/passwd has been changed",
+        "priority": "1",
+        "comments": "",
+    },
+    {
+        "expression": "min(/MoniPro Active Agents General/vm.memory.utilization,5m)>90",
+        "description": "Linux: High memory utilization",
+        "priority": "3",
+        "comments": "The system is running out of free memory.",
+    },
+    {
+        "expression": "last(/MoniPro Active Agents General/proc.num)/last(/MoniPro Active Agents General/kernel.maxproc)*100>80",
+        "description": "Linux: Getting closer to process limit",
+        "priority": "2",
+        "comments": "",
+    },
+    {
+        "expression": "max(/MoniPro Active Agents General/system.swap.size[,pfree],5m)<50 and last(/MoniPro Active Agents General/system.swap.size[,total])>0",
+        "description": "Linux: High swap space usage",
+        "priority": "2",
+        "comments": "If there is no swap configured, this trigger is ignored.",
+    },
+    {
+        "expression": "max(/MoniPro Active Agents General/vm.memory.size[available],5m)<20M and last(/MoniPro Active Agents General/vm.memory.size[total])>0",
+        "description": "Linux: Lack of available memory",
+        "priority": "3",
+        "comments": "The system is running out of memory.",
+    },
+    {
+        "expression": "min(/MoniPro Active Agents General/system.cpu.load[all,avg1],5m)/last(/MoniPro Active Agents General/system.cpu.num)>1.5\r\nand last(/MoniPro Active Agents General/system.cpu.load[all,avg5])>0\r\nand last(/MoniPro Active Agents General/system.cpu.load[all,avg15])>0",
+        "description": "Linux: Load average is too high",
+        "priority": "3",
+        "comments": "The load average per CPU is too high. The system may be slow to respond.",
+    },
+    {
+        "expression": "change(/MoniPro Active Agents General/system.sw.packages.get)<>0",
+        "description": "Linux: Number of installed packages has been changed",
+        "priority": "2",
+        "comments": "",
+    },
+]

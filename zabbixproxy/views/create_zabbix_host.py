@@ -8,14 +8,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from utils import ServiceErrorHandler
-from zabbixproxy.credentials_functions import zabbix_login
-from zabbixproxy.models import Host
+from zabbixproxy.functions.credentials_functions import zabbix_login
+from zabbixproxy.models import Host, TemplateMirror
 from zabbixproxy.tasks import host_creation_workflow
 
 django_logger = logging.getLogger("django")
 
 
-class SimpleCheckZabbixHostCreationView(APIView):
+class ZabbixHostCreationView(APIView):
     api_url = settings.ZABBIX_API_URL
     username = settings.ZABBIX_ADMIN_USER
     password = settings.ZABBIX_ADMIN_PASSWORD
@@ -33,11 +33,17 @@ class SimpleCheckZabbixHostCreationView(APIView):
     def post(self, request):
         """Creates a Zabbix Host for the authenticated user."""
         user = request.user
-        item_template_list = request.data
-        local_host_id = item_template_list.get("local_host_id", None)
+        host_params = request.data
+        local_host_id = host_params.get("local_host_id", None)
         if local_host_id is None:
             return Response(
                 {"status": "error", "message": "local_host_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        template_list = host_params.get("template_list", [])
+        if not template_list:
+            return Response(
+                {"status": "error", "message": "template_list is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -58,6 +64,29 @@ class SimpleCheckZabbixHostCreationView(APIView):
             django_logger.exception(f"Database error fetching Host: {str(e)}")
             return Response(
                 {"status": "error", "message": "Failed to retrieve host information."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        try:
+            for template in template_list:
+                template_instance = TemplateMirror.objects.filter(
+                    template_id=template
+                ).first()
+                if not template_instance:
+                    django_logger.error(f"Template with ID {template} not found")
+                    django_logger.error(
+                        f"Host creation failed for user {user.username} with host {host.host} due to missing template {template}"
+                    )
+                    return Response(
+                        {"status": "error", "message": "Template not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+        except Exception as e:
+            django_logger.exception(f"Error fetching template: {str(e)}")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Failed to retrieve template information. please try again later",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -81,7 +110,7 @@ class SimpleCheckZabbixHostCreationView(APIView):
                 api_url=self.api_url,
                 auth_token=auth_token,
                 hostgroup=host_group,
-                item_template_list=item_template_list,
+                host_params=host_params,
             )
 
             return Response(

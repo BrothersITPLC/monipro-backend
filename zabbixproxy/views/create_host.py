@@ -18,46 +18,6 @@ class HostAPIView(APIView):
     It handles errors gracefully and logs them for debugging purposes.
     """
 
-    # permission_classes = [IsAuthenticated]
-
-    # def get(self, request):
-    #     user = request.user
-    #     hosts = Host.objects.filter(
-    #         host_group__id=user.organization.organization_hostgroup.first().id
-    #     )
-    #     hosted_hostes = []
-    #     local_hosts = []
-    #     for host in hosts:
-    #         if host in HostLifecycle.objects.all():
-    #             serializer = HostSerializer(host)
-    #             hosted_hostes.append(serializer.data)
-    #         else:
-    #             serializer = HostSerializer(host)
-    #             local_hosts.append(host)
-    #     data = {
-    #         "hosted_hosts": hosted_hostes,
-    #         "local_hosts": local_hosts,
-    #     }
-
-    #     hosted_hostes = HostLifecycle.objects.filter()
-    #     if not hosts:
-    #         django_logger.error("No hosts found in the database.")
-    #         return Response(
-    #             {
-    #                 "status": "error",
-    #                 "message": "Hosts not found",
-    #             },
-    #             status=status.HTTP_404_NOT_FOUND,
-    #         )
-    #     serializer = HostSerializer(hosts, many=True)
-    #     return Response(
-    #         {
-    #             "status": "success",
-    #             "message": "Hosts list retrieved successfully",
-    #             "data": data,
-    #         },
-    #         status=status.HTTP_200_OK,
-    #     )
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -124,7 +84,6 @@ class HostAPIView(APIView):
                 {
                     "status": "error",
                     "message": "An unexpected error occurred while retrieving hosts.",
-                    "details": str(e),
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
