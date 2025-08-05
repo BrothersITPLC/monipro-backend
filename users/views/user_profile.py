@@ -18,6 +18,7 @@ class UserProfileView(APIView):
             serializer = UserProfileSerializer(
                 request.user, context={"request": request}
             )
+
             return Response(
                 {
                     "status": "success",

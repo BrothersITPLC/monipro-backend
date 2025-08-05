@@ -10,10 +10,12 @@ from zabbixproxy.views import (
     AnsibleDeployView,
     CheckReachabilityView,
     GetTemplateNameView,
+    GetTemplates,
     GetZabbixHostes,
     HostAndUserGroupCreationView,
     HostAPIView,
     HostDeletionView,
+    HostVisualizationsView,
     TemplateGroupView,
     TemplateView,
     ZabbixHostCreationView,
@@ -44,6 +46,7 @@ urlpatterns = [
         name="post_host_creation",
     ),
     path("template-name/", GetTemplateNameView.as_view(), name="template-name"),
+    path("templates/", GetTemplates.as_view(), name="templates"),
     path("delete-host/", HostDeletionView.as_view(), name="host-deletion"),
     path(
         "create-template-group/",
@@ -51,4 +54,9 @@ urlpatterns = [
         name="create-template-group",
     ),
     path("create-template/", TemplateView.as_view(), name="create-template"),
+    path(
+        "visualizations/<str:host_id>/",
+        HostVisualizationsView.as_view(),
+        name="host-visualizations",
+    ),
 ]

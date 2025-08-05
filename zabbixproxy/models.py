@@ -209,10 +209,12 @@ class TemplateGroupMirror(models.Model):
 
 
 class TemplateMirror(models.Model):
-    template_group = models.ForeignKey(TemplateGroupMirror, on_delete=models.PROTECT)
+    template_group = models.ForeignKey(
+        TemplateGroupMirror, on_delete=models.PROTECT, related_name="templates"
+    )
     template_description = models.TextField()
     template_name = models.CharField(max_length=1000)
     template_id = models.CharField(max_length=10, blank=True, default="0")
 
     def __str__(self):
-        return f"{self.templat_name}"
+        return f"{self.template_name}"
