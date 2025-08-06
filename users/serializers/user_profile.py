@@ -7,6 +7,9 @@ from users.serializers import ProfilePictureUpdateSerializer
 from zabbixproxy.models import ZabbixHostGroup, ZabbixUser, ZabbixUserGroup
 
 User = get_user_model()
+import logging
+
+django_logger = logging.getLogger("django")
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -89,7 +92,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         organization = getattr(obj, "organization", None)
         if not organization:
             return None
-        print("one")
         transaction = (
             Transaction.objects.filter(customer=organization).order_by("-id").first()
         )

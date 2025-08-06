@@ -1,3 +1,4 @@
+# hi
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -145,6 +146,7 @@ JWT_AUTH = {
         "password-forgot",
         "password-reset",
         "google-exchange",
+        "host-visualizations",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -161,6 +163,7 @@ JWT_AUTH = {
         "/api/deploy/",
         "/api/token/refresh/",
         "/api/token/",
+        "/api/visualizations/<str:host_id>/",
     ],
     "COOKIE_SETTINGS": {
         "ACCESS_TOKEN_NAME": "access_token",

@@ -4,6 +4,9 @@ from zabbixproxy.models import TemplateMirror
 
 
 class TemplateSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = TemplateMirror
         fields = "__all__"
+
+

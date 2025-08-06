@@ -9,3 +9,5 @@ from zabbixproxy.views.create_zabbix_host import ZabbixHostCreationView
 from zabbixproxy.views.delete_host import HostDeletionView
 from zabbixproxy.views.get_hosts import GetZabbixHostes
 from zabbixproxy.views.get_template import GetTemplateNameView
+from zabbixproxy.views.get_template_two import GetTemplates
+from zabbixproxy.views.item_visualizations import HostVisualizationsView
