@@ -147,6 +147,7 @@ JWT_AUTH = {
         "password-reset",
         "google-exchange",
         "host-visualizations",
+        "github-exchange",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -160,6 +161,7 @@ JWT_AUTH = {
         "/api/password-forgot/",
         "/api/password-reset/",
         "/api/google-exchange/",
+        "/api/github-exchange/",
         "/api/deploy/",
         "/api/token/refresh/",
         "/api/token/",
@@ -287,34 +289,28 @@ LOGIN_URL = "https://monipro.brothersit.dev/auth"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
-        "APP": {
-            "client_id": "289478844187-2lckh4oovv3jied47060dajl12g83e8b.apps.googleusercontent.com",
-            "secret": "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",
-            "key": "",
+        "app": {
+            "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "google_client_secret": os.getenv("GOGLE_CLIENT_SECRET", ""),
         },
-        "ANDROID": {
-            "client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
-            "package_name": "com.example.monipro_mobile",
-            "certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737",
+        "android": {
+            "google_mobile_client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
+            "google_mobile_package_name": "com.example.monipro_mobile",
+            "google_mobile_certificate_hash": "18030FBE7246B35B0EB4F25B6EF009CB95015737",
         },
-        "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-            # "prompt": "select_account"
+        "google_redirect_url": os.getenv("GOOGLE_REDIRECT_URL", ""),
+    },
+    "github": {
+        "app": {
+            "github_client_id": os.getenv("GITHUB_CLIENT_ID", ""),
+            "github_client_secret": os.getenv("GITHUB_CLIENT_SECRET", ""),
         },
-        "OAUTH_PKCE_ENABLED": True,
-        # Callback URLs
-        "CALLBACK_URL": "https://monipro.brothersit.dev/api/auth/google/callback/",
-        "REDIRECT_URIS": [
-            "https://monipro.brothersit.dev/api/auth/google/callback/",
-            "com.example.monipro_mobile:/oauth2callback",
-        ],
-    }
+        "github_redirect_url": os.getenv("GITHUB_REDIRECT_URL", ""),
+    },
 }
-LOGIN_REDIRECT_URL = "google-callback"
+
 SOCIALACCOUNT_LOGIN_ON_GET = True
-REDIRECT_URL = "http://localhost:5173/social/auth/google/callback"
-# REDIRECT_URL = "https://monipro.brothersit.dev/social/auth/google/callback"
+
 
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)

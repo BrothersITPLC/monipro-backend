@@ -26,14 +26,18 @@ class GoogleExchangeView(APIView):
 
         try:
             app = SocialApp.objects.get(provider="google")
-            client_id = app.client_id
-            client_secret = app.secret
-        except SocialApp.DoesNotExist:
-            client_id = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["client_id"]
-            client_secret = settings.SOCIALACCOUNT_PROVIDERS["google"]["APP"]["secret"]
+            client_id = app.google_client_id
+            client_secret = app.google_client_secret
 
-        # Use the frontend redirect URI
-        redirect_uri = settings.REDIRECT_URL
+        except SocialApp.DoesNotExist:
+            client_id = settings.SOCIALACCOUNT_PROVIDERS["google"]["app"][
+                "google_client_id"
+            ]
+            client_secret = settings.SOCIALACCOUNT_PROVIDERS["google"]["app"][
+                "google_client_secret"
+            ]
+
+        redirect_uri = settings.SOCIALACCOUNT_PROVIDERS["google"]["google_redirect_url"]
 
         token_url = "https://oauth2.googleapis.com/token"
         token_payload = {

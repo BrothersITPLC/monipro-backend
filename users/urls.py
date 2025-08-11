@@ -5,6 +5,7 @@ from .views import (
     ChangePasswordView,
     ForgotPasswordView,
     GetTeamUsersView,
+    GitHubExchangeView,
     GoogleExchangeView,
     InitialRegistrationView,
     Login,
@@ -19,7 +20,6 @@ from .views import (
     VerifyRegistrationOtp,
 )
 from .views.csrf import get_csrf_token
-
 
 urlpatterns = [
     path(
@@ -41,6 +41,11 @@ urlpatterns = [
     path("password-reset/", PasswordResetView.as_view(), name="password-reset"),
     path("google-exchange/", GoogleExchangeView.as_view(), name="google-exchange"),
     path(
+        "github-exchange/",
+        GitHubExchangeView.as_view(),
+        name="github-exchange",
+    ),
+    path(
         "update-profile-picture/",
         ProfilePictureUpdateView.as_view(),
         name="update-profile-picture",
@@ -50,15 +55,12 @@ urlpatterns = [
     path("add-team-user/", AddUserView.as_view(), name="add-team-user"),
     path("get-team-users/", GetTeamUsersView.as_view(), name="get-team-users"),
     path("set-active/", SetUserActiveAPIView.as_view(), name="set-user-active"),
-    path('csrf/', get_csrf_token, name='get_csrf_token'),
-    path('register/', InitialRegistrationView.as_view(), name='register'),
+    path("csrf/", get_csrf_token, name="get_csrf_token"),
+    path("register/", InitialRegistrationView.as_view(), name="register"),
 ]
-from users.views.login import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from users.views.login import TokenObtainPairView, TokenRefreshView
 
 urlpatterns += [
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
