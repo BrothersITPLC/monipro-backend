@@ -82,6 +82,10 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    telegram_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    profile_photo_url = models.URLField(max_length=512, null=True, blank=True)
+
+
     objects = UserManager()
 
     USERNAME_FIELD = "email"
