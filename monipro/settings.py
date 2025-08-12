@@ -146,6 +146,7 @@ JWT_AUTH = {
         "password-forgot",
         "password-reset",
         "google-exchange",
+        "telegram",
         "host-visualizations",
     ],
     "EXCLUDED_PATHS": [
@@ -160,6 +161,7 @@ JWT_AUTH = {
         "/api/password-forgot/",
         "/api/password-reset/",
         "/api/google-exchange/",
+        "/api/telegram/",
         "/api/deploy/",
         "/api/token/refresh/",
         "/api/token/",
