@@ -15,4 +15,4 @@ from users.views.team_user_by_organization import TeamUserByOrganizationView
 from users.views.update_profile import UpdateProfileView
 from users.views.user_profile import UserProfileView
 from users.views.verify_registration_otp import VerifyRegistrationOtp
-from users.views.telegram import TelegramAuthView
+from users.views.telegram import Telegram_Login

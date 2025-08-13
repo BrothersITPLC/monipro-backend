@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
     "social_django",
-    "allauth.headless",
+    "allauth.headless"
     "django_cron",
 ]
 AUTH_USER_MODEL = "users.User"
@@ -148,6 +148,7 @@ JWT_AUTH = {
         "google-exchange",
         "host-visualizations",
         "github-exchange",
+        "telegram",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -162,6 +163,7 @@ JWT_AUTH = {
         "/api/password-reset/",
         "/api/google-exchange/",
         "/api/github-exchange/",
+        "/api/telegram/",
         "/api/deploy/",
         "/api/token/refresh/",
         "/api/token/",
