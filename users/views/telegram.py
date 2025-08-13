@@ -1,126 +1,77 @@
-import hashlib
+# accounts/views.py
+import json
+import time
 import hmac
-import logging
-
+import hashlib
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.middleware.csrf import get_token
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model, login
 
 User = get_user_model()
-logger = logging.getLogger("django")
-BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
 
+def verify_telegram_auth(payload: dict, bot_token: str) -> bool:
+    payload = payload.copy()
+    hash_received = payload.pop("hash", None)
+    if not hash_received:
+        return False
 
-class TelegramAuthView(APIView):
-    """
-    Handles Telegram login authentication using Telegram Login Widget data.
-    """
+    data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(payload.items()))
+    secret_key = hashlib.sha256(bot_token.encode()).digest()
+    computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
-    def post(self, request):
-        data = request.data.copy()
-        received_hash = data.pop("hash", None)
+    return hmac.compare_digest(computed_hash, hash_received)
 
-        if not received_hash:
-            return Response(
-                {"status": "error", "message": "Missing authentication hash."},
-                status=status.HTTP_400_BAD_REQUEST,
+@csrf_exempt
+def Telegram_Auth(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+
+    try:
+        payload = json.loads(request.body.decode())
+    except Exception:
+        return JsonResponse({"error": "invalid json"}, status=400)
+
+    bot_token = settings.TELEGRAM_BOT_TOKEN
+    if not bot_token:
+        return JsonResponse({"error": "server misconfiguration"}, status=500)
+
+    if not verify_telegram_auth(payload, bot_token):
+        return JsonResponse({"error": "invalid signature"}, status=403)
+
+    auth_date = int(payload.get("auth_date", 0))
+    if time.time() - auth_date > 86400:  # 24 hours max
+        return JsonResponse({"error": "auth_date too old"}, status=403)
+
+    telegram_id = int(payload["id"])
+    first_name = payload.get("first_name", "")
+    last_name = payload.get("last_name", "")
+    username = payload.get("username")
+    photo_url = payload.get("photo_url")
+
+    try:
+        user = User.objects.get(telegram_id=telegram_id)
+    except User.DoesNotExist:
+        # If the current request has an authenticated user, link Telegram to them
+        if request.user.is_authenticated:
+            user = request.user
+        else:
+            # Otherwise, create new user
+            user = User.objects.create_user(
+                username=f"tg_{telegram_id}",
+                first_name=first_name[:150],
+                last_name=last_name[:150]
             )
+        user.telegram_id = telegram_id
+        user.telegram_username = username
+        user.telegram_photo_url = photo_url
+        user.save()
 
-        # Build data_check_string per Telegram docs
-        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
+    # Log them in (Django session auth)
+    login(request, user)
 
-        # Calculate hash using bot token secret key
-        secret_key = hashlib.sha256(BOT_TOKEN.encode()).digest()
-        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-
-        # Timing-safe comparison
-        if not hmac.compare_digest(calculated_hash, received_hash):
-            return Response(
-                {"status": "error", "message": "Invalid authentication data."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        telegram_id = data.get("id")
-        username = data.get("username", "")
-        first_name = data.get("first_name", "")
-        last_name = data.get("last_name", "")
-        photo_url = data.get("photo_url", "")
-        auth_date = data.get("auth_date")
-
-        if not telegram_id or not auth_date:
-            return Response(
-                {"status": "error", "message": "Missing required Telegram user data."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Optional: Check auth_date freshness (e.g., within 1 day)
-        import time
-        if abs(time.time() - int(auth_date)) > 86400:
-            return Response(
-                {"status": "error", "message": "Authentication data is too old."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # Find or create user
-        user, created = User.objects.get_or_create(
-            telegram_id=telegram_id,
-            defaults={
-                "name": username,
-                "first_name": first_name,
-                "last_name": last_name,
-                "is_active": True,
-                "is_verified": True,
-                "is_from_social": True,
-                "profile_photo_url": photo_url,  # if you have this field
-            },
-        )
-
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
-
-        action = "signup" if created else "login"
-        csrf_token = get_token(request)
-
-        response = Response(
-            {
-                "status": "success",
-                "message": f"Telegram {action} successful",
-                "csrf_token": csrf_token,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-        cookie_settings = settings.JWT_AUTH.get("COOKIE_SETTINGS", {})
-
-        response.set_cookie(
-            "csrftoken",
-            csrf_token,
-            samesite=cookie_settings.get("SAMESITE", "Lax"),
-            secure=cookie_settings.get("SECURE", False),
-        )
-
-        response.set_cookie(
-            cookie_settings.get("ACCESS_TOKEN_NAME", "access_token"),
-            access_token,
-            httponly=cookie_settings.get("HTTPONLY", True),
-            secure=cookie_settings.get("SECURE", True),
-            samesite=cookie_settings.get("SAMESITE", "Lax"),
-            max_age=cookie_settings.get("ACCESS_MAX_AGE", 604800),
-        )
-
-        response.set_cookie(
-            cookie_settings.get("REFRESH_TOKEN_NAME", "refresh_token"),
-            refresh_token,
-            httponly=cookie_settings.get("HTTPONLY", True),
-            secure=cookie_settings.get("SECURE", True),
-            samesite=cookie_settings.get("SAMESITE", "Lax"),
-            max_age=cookie_settings.get("REFRESH_MAX_AGE", 604800),
-        )
-
-        return response
+    return JsonResponse({
+        "ok": True,
+        "username": user.username,
+        "telegram_username": user.telegram_username,
+    })
