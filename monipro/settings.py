@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
     "social_django",
-    "allauth.headless"
+    "allauth.headless",
     "django_cron",
 ]
 AUTH_USER_MODEL = "users.User"
@@ -293,7 +293,7 @@ SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "app": {
             "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
-            "google_client_secret": os.getenv("GOGLE_CLIENT_SECRET", ""),
+            "google_client_secret": os.getenv("GOOGLE_CLIENT_SECRET", ""),
         },
         "android": {
             "google_mobile_client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
