@@ -27,7 +27,13 @@ ZABBIX_DEFAULT_PASSWORD = os.getenv("ZABBIX_DEFAULT_PASSWORD", "nochangeatall")
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS", "").split(",")
 
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "monipro.brothersit.dev", "192.168.10.199"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "monipro.brothersit.dev",
+    "192.168.10.199",
+    "52.143.159.19",
+]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
