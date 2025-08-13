@@ -15,10 +15,10 @@ from .views import (
     SetUserActiveAPIView,
     TeamUserByOrganizationView,
     TeamUserView,
+    Telegram_Auth,
     UpdateProfileView,
     UserProfileView,
     VerifyRegistrationOtp,
-    TelegramAuthView
 )
 from .views.csrf import get_csrf_token
 
@@ -41,7 +41,7 @@ urlpatterns = [
     path("password-forgot/", ForgotPasswordView.as_view(), name="password-forgot"),
     path("password-reset/", PasswordResetView.as_view(), name="password-reset"),
     path("google-exchange/", GoogleExchangeView.as_view(), name="google-exchange"),
-    path("telegram/", TelegramAuthView.as_view(), name="telegram_auth"),
+    path("telegram/", Telegram_Auth, name="telegram"),
     path(
         "github-exchange/",
         GitHubExchangeView.as_view(),

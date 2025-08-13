@@ -154,6 +154,7 @@ JWT_AUTH = {
         "google-exchange",
         "host-visualizations",
         "github-exchange",
+        "telegram",
     ],
     "EXCLUDED_PATHS": [
         "/api/login/",
@@ -168,6 +169,7 @@ JWT_AUTH = {
         "/api/password-reset/",
         "/api/google-exchange/",
         "/api/github-exchange/",
+        "/api/telegram/",
         "/api/deploy/",
         "/api/token/refresh/",
         "/api/token/",
@@ -297,7 +299,7 @@ SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "app": {
             "google_client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
-            "google_client_secret": os.getenv("GOGLE_CLIENT_SECRET", ""),
+            "google_client_secret": os.getenv("GOOGLE_CLIENT_SECRET", ""),
         },
         "android": {
             "google_mobile_client_id": "100510992151-p9gjup17dhq1prs9clp4v8f27qsnfhbc.apps.googleusercontent.com",
