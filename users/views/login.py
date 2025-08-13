@@ -4,25 +4,24 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from users.serializers import CustomTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-
-
-from users.serializers import LoginSerializer
+from users.serializers import CustomTokenObtainPairSerializer, LoginSerializer
 from utils import ServiceErrorHandler
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
 class Login(APIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
         try:
-            serializer = LoginSerializer(data=request.data, context={"request": request})
+            serializer = LoginSerializer(
+                data=request.data, context={"request": request}
+            )
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data.get("user")
 
@@ -71,7 +70,7 @@ class Login(APIView):
                 max_age=cookie_settings.get("REFRESH_MAX_AGE", 604800),
             )
             return response
-        
+
         except ServiceErrorHandler as e:
             return Response(
                 {"status": "error", "message": str(e)},
@@ -79,8 +78,11 @@ class Login(APIView):
             )
 
         except Exception as e:
+            print(str(e))
             return Response(
-                {"status": "error", "message": "Something went wrong. Please try again later."},
+                {
+                    "status": "error",
+                    "message": "Something went wrong. Please try again later.",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        

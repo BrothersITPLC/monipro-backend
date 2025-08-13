@@ -163,6 +163,7 @@ class GoogleExchangeView(APIView):
             return response
 
         except Exception as e:
+            print(str(e))
             django_logger.error(f"Error during Google token exchange: {e}")
             print(e)
             return Response(
