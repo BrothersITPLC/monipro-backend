@@ -3,6 +3,7 @@ from users.views.add_user import AddUserView
 from users.views.change_password import ChangePasswordView
 from users.views.forgot_password import ForgotPasswordView
 from users.views.get_team_users import GetTeamUsersView
+from users.views.github_exchange import GitHubExchangeView
 from users.views.google_exchange import GoogleExchangeView
 from users.views.initial_registration import InitialRegistrationView
 from users.views.login import Login
