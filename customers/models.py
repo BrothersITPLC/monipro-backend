@@ -7,7 +7,7 @@ from subscription.models import Duration, PaymentPlan, PaymentProvider
 
 class OrganizationInfo(models.Model):
     organization_name = models.CharField(max_length=255)
-    organization_phone = models.CharField(max_length=15, unique=True)
+    organization_phone = models.CharField(max_length=13, unique=True)
     organization_website = models.URLField(blank=True, null=True)
     organization_description = models.TextField(blank=True, null=True)
     payment_provider = models.ForeignKey(
