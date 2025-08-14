@@ -16,8 +16,15 @@ class UpdateProfileSerializer(serializers.Serializer):
     organization_description = serializers.CharField(required=False)
 
     def validate_phone(self, value):
+
+        # Ethiopian phone regex: +251 followed by 9 digits starting with 7 or 9
+        pattern = r'^\+251[79]\d{8}$'
+        if not re.match(pattern, value):
+           raise ServiceErrorHandler( "Phone number must be in the format +2517XXXXXXXX or +2519XXXXXXXX")
+
         user_qs = User.objects.filter(phone=value)
         org_qs = OrganizationInfo.objects.filter(organization_phone=value)
+        
 
         if self.instance:
             user_qs = user_qs.exclude(id=self.instance.id)
