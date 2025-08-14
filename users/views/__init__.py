@@ -12,6 +12,7 @@ from users.views.profile_picture_update import ProfilePictureUpdateView
 from users.views.reset_password import PasswordResetView
 from users.views.team_user import TeamUserView
 from users.views.team_user_by_organization import TeamUserByOrganizationView
+from users.views.telegram import Telegram_Auth
 from users.views.update_profile import UpdateProfileView
 from users.views.user_profile import UserProfileView
 from users.views.verify_registration_otp import VerifyRegistrationOtp
