@@ -152,6 +152,12 @@ class GitHubExchangeView(APIView):
                     "is_from_social": True,
                 },
             )
+            
+            if created and profile_picture_url:
+                img_response = requests.get(profile_picture_url)
+                if img_response.status_code == 200:
+                    file_name = f"{first_name}_{last_name}_{email}.jpg"
+                    user.profile_picture.save(file_name, ContentFile(img_response.content), save=True)
 
             refresh = RefreshToken.for_user(user)
             access_jwt = str(refresh.access_token)

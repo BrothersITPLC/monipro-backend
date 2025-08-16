@@ -177,3 +177,5 @@ elk-logging
 deleted/
 
 stg_conf
+env
+env/

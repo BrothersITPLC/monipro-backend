@@ -15,7 +15,6 @@ from .views import (
     SetUserActiveAPIView,
     TeamUserByOrganizationView,
     TeamUserView,
-    Telegram_Auth,
     UpdateProfileView,
     UserProfileView,
     VerifyRegistrationOtp,
@@ -43,7 +42,7 @@ urlpatterns = [
     path("password-forgot/", ForgotPasswordView.as_view(), name="password-forgot"),
     path("password-reset/", PasswordResetView.as_view(), name="password-reset"),
     path("google-exchange/", GoogleExchangeView.as_view(), name="google-exchange"),
-    path("telegram/", Telegram_Auth, name="telegram"),
+    path("telegram/", Telegram_Auth.as_view(), name="telegram"),
     path(
         "github-exchange/",
         GitHubExchangeView.as_view(),

@@ -139,7 +139,6 @@ class OTP(models.Model):
     def __str__(self):
         return f"OTP for {self.user.email}: {self.otp_code}"
 
-
 def generate_otp():
     """Generate a random 6-digit OTP code."""
     return "{:06d}".format(random.randint(0, 999999))
