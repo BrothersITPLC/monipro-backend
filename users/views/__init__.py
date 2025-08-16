@@ -16,3 +16,4 @@ from users.views.telegram import Telegram_Auth
 from users.views.update_profile import UpdateProfileView
 from users.views.user_profile import UserProfileView
 from users.views.verify_registration_otp import VerifyRegistrationOtp
+from users.views.telegram import Telegram_Auth

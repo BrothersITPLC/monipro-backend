@@ -10,6 +10,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
+from django.core.files.base import ContentFile
+import os
+
 User = get_user_model()
 django_logger = logging.getLogger("django")
 
@@ -70,6 +74,7 @@ class GoogleExchangeView(APIView):
                 user_info_url, headers={"Authorization": f"Bearer {access_token}"}
             )
             user_info = user_info_response.json()
+            print(user_info)
 
             email = user_info.get("email")
             if not email:
@@ -96,6 +101,9 @@ class GoogleExchangeView(APIView):
             first_name = user_info.get("given_name", "")
             last_name = user_info.get("family_name", "")
 
+            profile_picture_url = user_info.get("picture", "")
+
+
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
@@ -105,9 +113,17 @@ class GoogleExchangeView(APIView):
                     "is_active": True,
                     "is_admin": True,
                     "is_verified": True,
-                    "is_from_social": True,
+                    "is_from_social": True
                 },
             )
+
+            
+            if created and profile_picture_url:
+                img_response = requests.get(profile_picture_url)
+                if img_response.status_code == 200:
+                    file_name = f"{first_name}_{last_name}_{email}.jpg"
+                    user.profile_picture.save(file_name, ContentFile(img_response.content), save=True)
+
 
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
@@ -163,9 +179,7 @@ class GoogleExchangeView(APIView):
             return response
 
         except Exception as e:
-            print(str(e))
             django_logger.error(f"Error during Google token exchange: {e}")
-            print(e)
             return Response(
                 {
                     "status": "error",

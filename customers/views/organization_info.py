@@ -28,7 +28,7 @@ class OrganizationInfoCreateView(APIView):
                 ),
                 "organization_phone": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Phone number in format +998XXXXXXXX",
+                    description="Ethiopian phone number starting with +251 followed by 9 digits (first digit 7 or 9)",
                 ),
                 "organization_website": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -143,7 +143,7 @@ class OrganizationInfoCreateView(APIView):
                 return Response(
                     {
                         "status": "error",
-                        "message": "Phone number must be in the format +998XXXXXXXX",
+                        "message": "Ethiopian phone number starting with +251 followed by 9 digits (first digit 7 or 9)",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
